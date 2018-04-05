@@ -57,7 +57,15 @@ def calmar_opt (weights):
     return -1 * sharpe
 
 
-def optimize(weights,ratio='omega',method='SLSQP'):
+def optimize(ratio='omega',method='SLSQP',weights =None):
+    global returns
+    print returns.shape[1]
+    if weights is None:
+        weights = []
+        for i in range(0,returns.shape[1]):
+            weights.append(float(1)/returns.shape[1])
+    print weights
+
     con = {'type': 'eq', 'fun': cons}
     sol=[]
     bnds = []

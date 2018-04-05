@@ -12,15 +12,17 @@ tick = ['CNP', 'F', 'WMT', 'GE','AAPL']
 weights=[0.2,0.2,0.1,0.1,0.2]
 r = ff.daily_returns(tick)
 opt.set_returns(r)
-sol = opt.optimize(weights,ratio='omega',method='fmin')
-sol2= opt.optimize(weights,ratio='omega',method='SLSQP')
+sol2= opt.optimize(ratio='omega',method='SLSQP')
+sol = opt.optimize(ratio='omega',method='fmin')
+
+sol3 = opt.optimize(ratio='omega',method='Nelder-Mead')
 ff.set_target(0.0)
-sol3 = opt.optimize(weights,ratio='omega',method='Nelder-Mead')
+
 gg.draw_portfolios_omega(r,tick,sol)
 gg.draw_portfolios_omega(r,tick,sol2)
 gg.draw_portfolios_omega(r,tick,sol3)
 
-sols= opt.optimize(weights,ratio='sharpe',method='fmin')
+sols= opt.optimize(ratio='sharpe',method='fmin')
 gg.draw_portfolios_sharpe(r,tick,sols)
 
 

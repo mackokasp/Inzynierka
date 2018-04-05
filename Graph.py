@@ -13,7 +13,7 @@ def draw_portfolios_omega(ddf,ticker,optimal=None):
     stock_weights = []
     num_assets = df.shape[1]
     num_portfolios = 500
-    np.random.seed(101)
+    np.random.seed(102)   #101
     omega2=0
     # populate the empty lists with each portfolios returns,risk and weights
     for portfolio in range(num_portfolios):
@@ -41,8 +41,9 @@ def draw_portfolios_omega(ddf,ticker,optimal=None):
     df = df[column_order]
     plt.style.use('seaborn-dark')
     df.plot.scatter(x='Volatility', y='Returns', c='Omega Ratio',  cmap='RdYlGn', edgecolors='black', figsize=(10, 8), grid=True)
+    v=plt.axis()
     if optimal is not None:
-        print ddf.shape[1]
+
         for i in range(0, ddf.shape[1]):
             omega2 = optimal[i] * ff.omega_ratio(ddf.iloc[:, i].as_matrix()) + omega2
         ret = np.dot(optimal, returns_annual)
@@ -50,8 +51,30 @@ def draw_portfolios_omega(ddf,ticker,optimal=None):
         plt.scatter(x=volatility, y=ret, c='blue', marker='x')
     plt.xlabel('Volatility (Std. Deviation)')
     plt.ylabel('Expected Returns')
-    plt.title('Random Portfolios')
+    plt.title(build_description(ticker,optimal))
+    plt.annotate(str(omega2),xy=(volatility,ret))
+    #ax=plt.subplot()
+    # str2 =build_description(ticker,optimal)
+    #ax.text(v[0],v[3], str2, style='italic',fontsize=12
+    #        , bbox={'facecolor': 'orange', 'alpha': 0.1, 'pad': 0.0}
+    #       )
+
     plt.show()
+
+
+def build_description(ticker,optimal):
+    string=''
+    i=0
+    optimal2=[]
+    for ti in ticker:
+
+        print ti
+        optimal2.append("{0:.4f}%".format(optimal[i] * 100))
+        string=string+ti+':'+optimal2[i]+' '
+        i=i+1
+    print string
+    return string
+
 
 
 def draw_portfolios_sharpe(ddf,ticker,optimal=None):
