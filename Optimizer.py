@@ -26,8 +26,7 @@ def normalize(weights):
 
 def omega_opt( weights):
     global returns
-
-    omega = 0
+    omega=0
     weights=normalize(weights)
     for i in range(0, returns.shape[1]):
         rr = returns.iloc[:, i]
@@ -53,24 +52,22 @@ def calmar_opt (weights):
         rr = returns.iloc[:, i]
         print'xxx'
         sharpe = ff.calmar_ratio(rr.as_matrix()) * weights[i] + sharpe
-        print sharpe
+
     return -1 * sharpe
 
 
 def optimize(ratio='omega',method='SLSQP',weights =None):
     global returns
-    print returns.shape[1]
     if weights is None:
         weights = []
         for i in range(0,returns.shape[1]):
             weights.append(float(1)/returns.shape[1])
-    print weights
 
     con = {'type': 'eq', 'fun': cons}
     sol=[]
     bnds = []
     for w in weights:
-        bnds.append((0.1, 1.0))
+        bnds.append((0.01, .6))
     if ratio=='omega':
         if method =='SLSQP':
             sol = minimize(omega_opt, method='SLSQP', x0=weights,bounds=bnds, constraints=con)

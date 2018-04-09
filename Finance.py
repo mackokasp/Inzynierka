@@ -21,7 +21,7 @@ def benchmark_data():
      df =pd.read_csv(dir)
      df=df.dropna()
      benchmark = df
-     print df.shape[0]
+
      return df
 
 def get_prices(ticker='AAPL',dfrom ='2015-1-1',dto='2017-12-31'):
@@ -38,7 +38,7 @@ def graph_data(tickers):
     data = quandl.get_table('WIKI/PRICES', ticker=tickers,
                             qopts={'columns': ['date', 'ticker', 'Open']},
                             date={'gte': '2015-1-1', 'lte': '2017-12-31'}, paginate=True)
-    print data
+    return data
 
 
 def daily_returns (tickers):
@@ -87,8 +87,8 @@ def lpm(returns, threshold, order):
     threshold_array.fill(threshold)
     diff = threshold_array - returns
     diff = diff.clip(min=0)
-    return numpy.sum(diff ** order) / len(returns)
-
+    db= numpy.sum(diff ** order) / len(returns)
+    return db
 
 def hpm(returns, threshold, order):
     threshold_array = numpy.empty(len(returns))
@@ -120,16 +120,39 @@ def sharpe_ratio( returns, rf=0.00):
 
 # er= mean , rf = 0.06
 def omega_ratio(returns, rf=0.03, target=0.05):
+
+
     global gtarget
     if gtarget is not None:
         target= gtarget
+        rf=target
     er = numpy.mean(returns)
-    return (er - rf) / lpm(returns, target, 1)
+    omega =(er - rf) / lpm(returns, target, 1)
+    return omega
+
+
+def omega2(returns, target =0.0):
+    upside = 0.0
+    downside = 0.0
+    if gtarget is not None:
+        target = gtarget
+
+    for rr in returns:
+        if rr > target:
+            upside = upside + (rr-target)
+        else:
+            downside= downside + (target-rr)
+
+    omega2= upside/downside
+    return omega2
+
+
+
 
 
 def sortino_ratio( returns, rf=0.03, target=0):
     er = numpy.mean(returns)
-    return (er - rf) / math.sqrt(lpm(returns, target, 2))
+    return (er - rf) / math.sqrt(lpm(returns, target, 1))
 
 def portfolio_omega(returns,weights,rf=0.03,target =0.1):
     omega = 0

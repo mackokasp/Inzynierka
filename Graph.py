@@ -23,7 +23,8 @@ def draw_portfolios_omega(ddf,ticker,optimal=None):
         returns = np.dot(weights, returns_annual)
         volatility = ff.portfolio_vol(df,weights.T)
         for i in range (0,df.shape[1]):
-            omega = weights.T[i]* ff.omega_ratio(df.iloc[:,i].as_matrix())+omega
+            omega = weights.T[i]* ff.omega2(df.iloc[:,i].as_matrix())+omega
+
         omega_ratio.append(omega)
         port_returns.append(returns)
         port_volatility.append(volatility)
@@ -45,19 +46,19 @@ def draw_portfolios_omega(ddf,ticker,optimal=None):
     if optimal is not None:
 
         for i in range(0, ddf.shape[1]):
-            omega2 = optimal[i] * ff.omega_ratio(ddf.iloc[:, i].as_matrix()) + omega2
+            omega2 = optimal[i] * ff.omega2(ddf.iloc[:, i].as_matrix()) + omega2
         ret = np.dot(optimal, returns_annual)
         volatility = ff.portfolio_vol(ddf, optimal)
         plt.scatter(x=volatility, y=ret, c='blue', marker='x')
-    plt.xlabel('Volatility (Std. Deviation)')
-    plt.ylabel('Expected Returns')
+    plt.xlabel('Odchylenie standardowe')
+    plt.ylabel('Oczekiwana stopa zwrotu')
     plt.title(build_description(ticker,optimal))
     plt.annotate(str(omega2),xy=(volatility,ret))
-    #ax=plt.subplot()
-    # str2 =build_description(ticker,optimal)
-    #ax.text(v[0],v[3], str2, style='italic',fontsize=12
-    #        , bbox={'facecolor': 'orange', 'alpha': 0.1, 'pad': 0.0}
-    #       )
+    ax=plt.subplot()
+    str2 ='Target:'+str(ff.gtarget*100)+'%'
+    ax.text(v[0],v[3]*0.8, str2, style='italic',fontsize=16
+            , bbox={'facecolor': 'red', 'alpha': 0.1, 'pad': 0.0}
+           )
 
     plt.show()
 
@@ -68,12 +69,15 @@ def build_description(ticker,optimal):
     optimal2=[]
     for ti in ticker:
 
-        print ti
-        optimal2.append("{0:.4f}%".format(optimal[i] * 100))
+
+        optimal2.append("{0:.3f}%".format(optimal[i] * 100))
+        if i==5:
+            string=string+' \n '
         string=string+ti+':'+optimal2[i]+' '
         i=i+1
-    print string
+
     return string
+
 
 
 
