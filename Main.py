@@ -7,7 +7,7 @@ import numpy.random as nrand
 import pandas
 import os
 import Prediction as pre
-print (os.path.dirname(__file__))
+
 tick = sorted(['AAPL','CNP', 'F', 'GE' ,'WMT'])
 tickers=sorted (['KO','AAN','PEP','GM','AIR','BA','YUM','CNP', 'GE' ,'WMT'] )
 
