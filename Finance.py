@@ -18,6 +18,7 @@ def benchmark_data():
      global benchmark
      dir = os.path.dirname(__file__)
      dir = dir + '\sp500.csv'
+     print (dir)
      df =pd.read_csv(dir)
      df=df.dropna()
      benchmark = df
@@ -41,10 +42,10 @@ def graph_data(tickers):
     return data
 
 
-def daily_returns (tickers):
+def daily_returns (tickers,datefrom='2015-1-1',dateto ='2017-12-31'):
     data = quandl.get_table('WIKI/PRICES', ticker = tickers,
                         qopts = { 'columns': ['date', 'ticker', 'adj_close'] },
-                        date = { 'gte': '2015-1-1', 'lte': '2017-12-31' }, paginate=True)
+                        date = { 'gte': datefrom, 'lte': dateto }, paginate=True)
 
     clean = data.set_index('date')
     table = clean.pivot(columns='ticker')
@@ -113,7 +114,57 @@ def cvar(returns, alpha):
     return abs(sum_var / index)
 
 
+def excess_var(er, returns, rf=0.0, target=0.0):
+    if gtarget is not None:
+        target = gtarget
+        rf=target
+
+    return (er - rf) / var(returns, target)
+
+
+def information_ratio(returns, benchmark):
+    diff = returns - benchmark
+    return numpy.mean(diff) / vol(diff)
+
+
+def treynor_ratio(er, returns, market, rf=0.0):
+    if gtarget is not None:
+        rf = gtarget
+    return (er - rf) / beta(returns, market)
+
+
+
+
+
+def average_dd(returns, periods):
+    # Returns the average maximum drawdown over n periods
+    drawdowns = []
+    for i in range(0, len(returns)):
+        drawdown_i = dd(returns, i)
+        drawdowns.append(drawdown_i)
+    drawdowns = sorted(drawdowns)
+    total_dd = abs(drawdowns[0])
+    for i in range(1, periods):
+        total_dd += abs(drawdowns[i])
+    return total_dd / periods
+
+
+def upside_potential_ratio(returns, target=0):
+    if gtarget is not None:
+        target = gtarget
+    return hpm(returns, target, 1) / math.sqrt(lpm(returns, target, 2))
+
+def beta(returns, market):
+    # Create a matrix of [returns, market]
+    m = numpy.matrix([returns, market])
+    # Return the covariance of m divided by the standard deviation of the market returns
+    return numpy.cov(m)[0][1] / numpy.std(market)
+
+
 def sharpe_ratio( returns, rf=0.00):
+    if gtarget is not None:
+        target = gtarget
+        rf=target
     er = numpy.mean(returns)
     return (er - rf) / vol(returns)
 
@@ -151,6 +202,9 @@ def omega2(returns, target =0.0):
 
 
 def sortino_ratio( returns, rf=0.03, target=0):
+    if gtarget is not None:
+        target = gtarget
+        rf=target
     er = numpy.mean(returns)
     return (er - rf) / math.sqrt(lpm(returns, target, 1))
 
@@ -181,7 +235,11 @@ def normalize(weights):
         nweights[i]=nweights[i]/suma
     return (nweights )
 
-def modigliani_ratio(er, returns, benchmark, rf):
+def modigliani_ratio( returns, benchmark, rf):
+    if gtarget is not None:
+        target = gtarget
+        rf=target
+    er=numpy.mean(returns)
     np_rf = numpy.empty(len(returns))
     np_rf.fill(rf)
     rdiff = returns - np_rf
@@ -189,6 +247,9 @@ def modigliani_ratio(er, returns, benchmark, rf):
     return (er - rf) * (vol(rdiff) / vol(bdiff)) + rf
 
 def calmar_ratio( returns, rf=0.03):
+    if gtarget is not None:
+        target = gtarget
+        rf=target
     er= returns.mean()
     return (er - rf) / max_dd(returns)
 

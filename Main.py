@@ -1,32 +1,35 @@
 import Finance as ff
 import Optimizer as opt
 import Graph as gg
+from amplpy import AMPL, Environment
 import numpy as numpy
 import numpy.random as nrand
 import pandas
 import os
-import Prediction as pred
-
-
+import Prediction as pre
+print (os.path.dirname(__file__))
 tick = sorted(['AAPL','CNP', 'F', 'GE' ,'WMT'])
 tickers=sorted (['KO','AAN','PEP','GM','AIR','BA','YUM','CNP', 'GE' ,'WMT'] )
 
 r2=ff.daily_returns(tickers)
-r = ff.daily_returns(tick)
+
+
+r = ff.daily_returns(tick,dateto='2017-12-31')
 opt.set_returns(r)
-ff.set_target(0.04)
+ff.set_target(0.001)
+
 sol2= opt.optimize(ratio='omega',method='SLSQP')
-sol = opt.optimize(ratio='omega',method='fmin')
+sol = opt.optimize(ratio='omega',method='lin')
 opt.set_returns(r2)
 sol3 = opt.optimize(ratio='omega',method='SLSQP')
 
-
+#gg.draw_table(r2,sol3)
 gg.draw_portfolios_omega(r,tick,sol)
 gg.draw_portfolios_omega(r,tick,sol2)
 gg.draw_portfolios_omega(r2,tickers,sol3)
-
+'''
 sols= opt.optimize(ratio='sharpe',method='fmin')
-#gg.draw_portfolios_sharpe(r,tick,sols)
+
 
 
 rr= ff.get_prices()
@@ -44,7 +47,7 @@ pred.prediction(rr['date'],rr['open'])
 #print sol
 #print ff.portfolio_omega(r,sol)
 #gg.draw_portfolios_calmar(r,tick,sol)
-
+'''
 
 '''
 sol2=(opt.optimize(weights,metfhod='SLSQP' ))

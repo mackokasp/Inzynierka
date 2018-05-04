@@ -1,8 +1,11 @@
 import Finance as ff
 import pandas as pd
 import numpy as np
-
 import matplotlib.pyplot as plt
+import plotly.plotly as py
+import plotly.graph_objs as go
+import plotly
+plotly.tools.set_credentials_file(username='kasprzyk_maciej', api_key='Sv8dKdTSuABfjDOiQ1l5')
 
 def draw_portfolios_omega(ddf,ticker,optimal=None):
     df=ddf
@@ -44,6 +47,7 @@ def draw_portfolios_omega(ddf,ticker,optimal=None):
     df.plot.scatter(x='Volatility', y='Returns', c='Omega Ratio',  cmap='RdYlGn', edgecolors='black', figsize=(10, 8), grid=True)
     v=plt.axis()
     if optimal is not None:
+        print (optimal)
 
         for i in range(0, ddf.shape[1]):
             omega2 = optimal[i] * ff.omega2(ddf.iloc[:, i].as_matrix()) + omega2
@@ -77,6 +81,188 @@ def build_description(ticker,optimal):
         i=i+1
 
     return string
+
+
+def draw_table(df,optimal):
+    print (optimal)
+
+    res = prepare_portfolio_data(df)
+    opt_res = prepare_optimal(df,optimal)
+
+    trace = go.Table(
+        header=dict(values=['   ','Mean(Portfolio_2)', 'Optimal_2'],
+                    line=dict(color='#7D7F80'),
+                    fill=dict(color='#a1c3d1'),
+                    align=['left'] * 10),
+        cells=dict(values=[['Volatility','Omega' ,'Sharpe' ,'Sortino' ,'Calamr','Max Drowdown','Treynor','Evar','Information_Ratio','Upside_Potential'],
+                           res,opt_res],
+                   line=dict(color='#7D7F80'),
+                   fill=dict(color='#EDFAFF'),
+                   align=['left'] * 10))
+
+    layout = dict(width=1500, height=3000)
+    data = [trace]
+    fig = dict(data=data, layout=layout)
+    py.plot(fig, filename='styled_table')
+
+
+
+
+def prepare_optimal(df,opt):
+    port_returns = []
+    port_volatility = []
+    omega_ratio = []
+    sortino_ratio = []
+    calmar_ratio = []
+    sharpe_ratio = []
+    maxdd_ratio = []
+    treynor_ratio = []
+    information_ratio=[]
+    upside_ratio=[]
+    evar_ratio = []
+    result = []
+    omega = 0
+    sortino = 0
+    calmar = 0
+    sharpe = 0
+    maxdd = 0
+    treynor = 0
+    evar = 0
+    inf=0
+    upside=0
+    volatility = ff.portfolio_vol(df, opt)
+    m = np.random.uniform(-0.03, 0.05, df.shape[0])
+    for i in range(0, df.shape[1]):
+        paper = df.iloc[:, i].as_matrix()
+        e = np.mean(paper)
+        omega = opt[i] * ff.omega2(paper) + omega
+        sortino = opt[i] * ff.sortino_ratio(paper) + sortino
+        calmar = opt[i] * ff.calmar_ratio(paper) + calmar
+        sharpe = opt[i] * ff.sharpe_ratio(paper) + sharpe
+        evar = opt[i] * ff.excess_var(e, paper) + evar
+        maxdd = opt[i] * ff.max_dd(paper) + maxdd
+        treynor = opt[i] * ff.treynor_ratio(e, paper, m) + treynor
+        inf= opt[i] * ff.information_ratio( paper, m) + inf
+        upside=opt[i]*ff.upside_potential_ratio(paper) + upside
+
+
+
+
+        omega_ratio.append(omega)
+        sharpe_ratio.append(sharpe)
+        calmar_ratio.append(calmar)
+        sortino_ratio.append(sortino)
+        maxdd_ratio.append(maxdd)
+        treynor_ratio.append(treynor)
+        evar_ratio.append(evar)
+        port_volatility.append(volatility)
+        information_ratio.append(inf)
+        upside_ratio.append(upside)
+
+    result.append(np.mean(port_volatility))
+    result.append(omega)
+    result.append(np.mean(sharpe_ratio))
+    result.append(np.mean(sortino_ratio))
+    result.append(np.mean(calmar_ratio))
+    result.append(np.mean(maxdd_ratio))
+    result.append(np.mean(treynor_ratio))
+    result.append(np.mean(evar_ratio))
+    result.append(np.mean(information_ratio))
+    result.append(np.mean(upside_ratio))
+    return result
+
+
+
+
+
+def prepare_portfolio_data (df):
+    returns_annual = df.mean() * 251
+    port_returns = []
+    port_volatility = []
+    omega_ratio = []
+    sortino_ratio=[]
+    calmar_ratio=[]
+    sharpe_ratio=[]
+    maxdd_ratio=[]
+    treynor_ratio=[]
+    evar_ratio=[]
+    result= []
+    information_ratio=[]
+    upside_ratio=[]
+
+
+
+
+    stock_weights = []
+    num_assets = df.shape[1]
+    print(df.shape[0])
+    num_portfolios = 15
+    np.random.seed(102)
+    m = np.random.uniform(-0.03, 0.05, df.shape[0])
+
+    # populate the empty lists with each portfolios returns,risk and weights
+    for portfolio in range(num_portfolios):
+        omega = 0
+        sortino=0
+        calmar=0
+        sharpe=0
+        maxdd =0
+        treynor=0
+        evar =0
+        inf=0
+        upside = 0
+
+        weights = np.random.random(num_assets)
+        weights /= np.sum(weights)
+        returns = np.dot(weights, returns_annual)
+        volatility = ff.portfolio_vol(df, weights.T)
+        for i in range(0, df.shape[1]):
+            paper = df.iloc[:, i].as_matrix()
+            e=np.mean(paper)
+            omega = weights.T[i] * ff.omega2(paper) + omega
+            sortino=weights.T[i] * ff.sortino_ratio(paper) + sortino
+            calmar = weights.T[i] * ff.calmar_ratio(paper) + calmar
+            sharpe = weights.T[i] * ff.sharpe_ratio(paper) + sharpe
+            evar= weights.T[i] * ff.excess_var(e,paper) + evar
+            maxdd=weights.T[i] * ff.max_dd(paper) + maxdd
+            treynor =weights.T[i] * ff.treynor_ratio(e,paper,m) +treynor
+            inf = weights.T[i] * ff.information_ratio(paper, m) + inf
+            upside = weights.T[i] * ff.upside_potential_ratio(paper) + upside
+
+
+
+        omega_ratio.append(omega)
+        sharpe_ratio.append(sharpe)
+        calmar_ratio.append(calmar)
+        sortino_ratio.append(sortino)
+        maxdd_ratio.append(maxdd)
+        treynor_ratio.append(treynor)
+        evar_ratio.append(evar)
+        port_returns.append(returns)
+        port_volatility.append(volatility)
+        stock_weights.append(weights)
+        information_ratio.append(inf)
+        upside_ratio.append(upside)
+
+    result.append(np.mean(port_volatility))
+    result.append(np.mean(omega_ratio))
+    result.append(np.mean(sharpe_ratio))
+    result.append(np.mean(sortino_ratio))
+    result.append(np.mean(calmar_ratio))
+    result.append(np.mean(maxdd_ratio))
+    result.append(np.mean(treynor_ratio))
+    result.append(np.mean(evar_ratio))
+    result.append(np.mean(information_ratio))
+    result.append(np.mean(upside_ratio))
+
+    return result
+
+
+
+
+
+
+
 
 
 

@@ -13,7 +13,6 @@ def prediction (dates,prices):
     y_rbf = svr_rbf.fit(X, y).predict(X)
     X_train, X_test, y_train, y_test = tts(X, y, test_size=0.3)
 
-    print model.fit(X_train, y_train).predict(X_test)[0]
 
 
 
@@ -28,7 +27,4 @@ def prediction (dates,prices):
     plt.title('Regression')
     plt.legend()
     plt.show()
-    print y_rbf[0]
-    print y_rbf[1]
-    print y_rbf[2]
     return
