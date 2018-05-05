@@ -47,6 +47,7 @@ def daily_returns (tickers,datefrom='2015-1-1',dateto ='2017-12-31'):
                         qopts = { 'columns': ['date', 'ticker', 'adj_close'] },
                         date = { 'gte': datefrom, 'lte': dateto }, paginate=True)
 
+    print (data)
     clean = data.set_index('date')
     table = clean.pivot(columns='ticker')
     returns_daily = table.pct_change()
