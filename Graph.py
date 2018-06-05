@@ -9,7 +9,7 @@ plotly.tools.set_credentials_file(username='kasprzyk_maciej', api_key='Sv8dKdTSu
 
 def draw_portfolios_omega(ddf,ticker,optimal=None):
     df=ddf
-    returns_annual = df.mean() * 251
+    returns_annual = df.mean()
     port_returns = []
     port_volatility = []
     omega_ratio = []
@@ -368,3 +368,26 @@ def draw_portfolios_calmar(ddf,ticker,optimal=None):
     # plt.clabel('Omega Ratio')
     plt.title('Efficient Frontier')
     plt.show()
+
+
+
+def eval_results(df,weights):
+
+    X = df[1].as_matrix().reshape(len(df[1]), 1)
+    y = []
+    start_price = []
+    print(df[1])#.ravel()
+    for r in range(df[0].shape[1]):
+        y.append(df[0]['open'].iloc[:,r].as_matrix().reshape(df[0].shape[0], 1).ravel())
+        start_price.append(df[0]['open'].iloc[0,r])
+    print (start_price)
+    price=[]
+    for i in range (len(y[0])):
+        avg=[]
+        for j in range (len(weights)):
+            avg.append((y[j][i]/start_price[j])*100*weights[j])
+        price.append(sum(avg))
+    print (price)
+    plt.plot(X, price, color='darkgreen', label='data')
+    plt.show()
+

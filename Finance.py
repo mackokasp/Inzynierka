@@ -3,6 +3,8 @@ import numpy
 import math
 import pandas as pd
 import os
+
+import time
 quandl.ApiConfig.api_key = 'xux8UTaML7UgmBhuGy4v'
 
 benchmark = []
@@ -25,12 +27,23 @@ def benchmark_data():
 
      return df
 
-def get_prices(ticker='AAPL',dfrom ='2015-1-1',dto='2017-12-31'):
+def get_prices(ticker,dfrom ='2015-1-1',dto='2018-1-10'):
         data = quandl.get_table('WIKI/PRICES', ticker=ticker,
-                                qopts={'columns': ['date', 'Open']},
+                                qopts={'columns': ['date', 'Open','ticker']},
                                 date={'gte': dfrom, 'lte': dto}, paginate=True)
-        data=data.dropna()
-        return data
+        data2 = quandl.get_table('WIKI/PRICES', ticker=ticker[0],
+                                qopts={'columns': ['date', 'Open', 'ticker']},
+                                date={'gte': dfrom, 'lte': dto}, paginate=True)
+        dates= data2['date']
+        res=[]
+        clean = data.set_index('date')
+        table = clean.pivot(columns='ticker')
+        returns_daily = table
+        data = returns_daily
+        data = data.dropna()
+        res.append(data)
+        res.append(dates)
+        return res
 
 
 
@@ -47,7 +60,6 @@ def daily_returns (tickers,datefrom='2015-1-1',dateto ='2017-12-31'):
                         qopts = { 'columns': ['date', 'ticker', 'adj_close'] },
                         date = { 'gte': datefrom, 'lte': dateto }, paginate=True)
 
-    print (data)
     clean = data.set_index('date')
     table = clean.pivot(columns='ticker')
     returns_daily = table.pct_change()
@@ -58,20 +70,52 @@ def daily_returns (tickers,datefrom='2015-1-1',dateto ='2017-12-31'):
     return data
 
 
-def make_date (year,month):
-    return str(year)+ '-' + str(month).zfill(2)
+def make_date (year,month,day):
+    return str(year)+ '-' + str(month).zfill(2)+'-'+str(day)
 
 
-def year_returns (ticker,year ):
-    assert year > 1980 and year < 2019
-    i=1
-    returns = []
-    while i < 12:
-        returns.append(get_return(ticker,make_date(year ,i) , make_date(year ,i+1)  ))
-        i=i+1
-    returns.append(get_return(ticker, make_date(year, 12), make_date(year+1, 1)))
-    ret = numpy.array(returns)
-    return ret
+def year_returns (tickers,yearfrom ,yearto ):
+    frets =[]
+    if 1==1:
+        datefrom = make_date(yearfrom, 1, 1)
+        dateto = make_date(yearto, 12, 31)
+        data = quandl.get_table('WIKI/PRICES', ticker=tickers,
+                                qopts={'columns': ['date', 'ticker', 'adj_close']},
+                                date={'gte': datefrom, 'lte': dateto}, paginate=True)
+        data= data.dropna()
+        data = data.pivot(index='date', columns='ticker', values='adj_close')
+        data=data.dropna(axis=0,how='any')
+
+        for i in range(yearto+1-yearfrom):
+
+            sttime=pd.to_datetime(str(yearfrom+i)+ '0101', format='%Y%m%d', errors='coerce')
+            entime =pd.to_datetime(str(yearfrom+i)+ '1231', format='%Y%m%d', errors='coerce')
+            data2=data.loc[sttime:entime]
+            rets = []
+            for j in range(data.shape[1]):
+                startprice = data2.iloc[0, j]
+                endprice = data2.iloc[-1, j]
+                ret = (endprice - startprice) / startprice
+                rets.append(ret)
+                print (rets)
+            frets.append(rets)
+
+
+
+    print (frets)
+    df = pd.DataFrame(frets,columns=tickers)
+    return df
+
+
+
+
+
+
+
+
+
+
+
 
 
 def get_return(ticker ,dateFrom,dateTo):

@@ -56,7 +56,7 @@ def calmar_opt (weights):
     return -1 * sharpe
 
 
-def optimize(ratio='omega',method='SLSQP',minW=0.01,maxW=0.6,weights =None):
+def optimize(ratio='omega',method='SLSQP',minW=0.01,maxW=0.8,weights =None):
     global returns
     if weights is None:
         weights = []
@@ -166,10 +166,8 @@ def run_ampl_model(data,minW=0.01,maxW=0.6):
     dir = os.path.dirname(__file__)
     dir=dir+'\\'+'ampl'
     dir=dir.replace('/','\\')
-    print (dir)
     ampl = AMPL(Environment(dir))
     ampl.setOption('solver','C:\\AMPL\\minos.exe')
-    print (dir)
     ampl.read('omg2.txt')
     data_file = generate_temp_data_file(data,minW=minW,maxW=maxW)
     ampl.readData(data_file.name)

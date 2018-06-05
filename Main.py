@@ -7,30 +7,50 @@ import numpy as numpy
 import numpy.random as nrand
 import pandas
 import os
-import Prediction as pre
+import Prediction as pred
+tick = sorted(['AAPL','CNP', 'F', 'GE' ])
+rr= ff.get_prices(tick)
+gg.eval_results(rr,[0.5,0.5,0.0,0.0])
+#pred.prediction(rr['date'],rr['open'])
+#gi.start()
+'''
+tick = sorted(['AAPL','CNP', 'F', 'GE' ])
+tickers=sorted (['AAN','GM','AIR','BA','CNP', 'GE' ] )
+ff.set_target(0.3)
+r =ff.year_returns(tick,2010,2017)
+opt.set_returns(r)
+sol =opt.optimize(ratio='omega',method='SLSQP')
 
-gi.start()
+gg.draw_portfolios_omega(r,tick,sol)
+'''
+'''
+opt.set_returns(r)
+ff.set_target(0.3)
+sol2 = opt.optimize(ratio='omega',method='lin',maxW=1.0)
+gg.draw_portfolios_omega(r,tick,sol2)
+gg.draw_table(r,sol2)
 
-tick = sorted(['AAPL','CNP', 'F', 'GE' ,'WMT'])
-tickers=sorted (['KO','AAN','PEP','GM','AIR','BA','YUM','CNP', 'GE' ,'WMT'] )
+
+
+
 
 r2=ff.daily_returns(tickers)
 
 
 r = ff.daily_returns(tick,dateto='2017-12-31')
 opt.set_returns(r)
-ff.set_target(0.0001)
 
-sol2= opt.optimize(ratio='omega',method='SLSQP')
+
+
 sol = opt.optimize(ratio='omega',method='lin')
 opt.set_returns(r2)
 sol3 = opt.optimize(ratio='omega',method='SLSQP')
 
 #gg.draw_table(r2,sol3)
 gg.draw_portfolios_omega(r,tick,sol)
-gg.draw_portfolios_omega(r,tick,sol2)
-gg.draw_portfolios_omega(r2,tickers,sol3)
 
+gg.draw_portfolios_omega(r2,tickers,sol3)
+'''
 '''
 sols= opt.optimize(ratio='sharpe',method='fmin')
 
