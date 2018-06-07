@@ -371,23 +371,45 @@ def draw_portfolios_calmar(ddf,ticker,optimal=None):
 
 
 
-def eval_results(df,weights):
+def eval_results(tick,weights,yearfrom,yearto):
+
+    startdate= str(yearfrom)+'-1-1'
+    enddate = str(yearto) + '-12-31'
+    middate=str(yearto) + '-1-1'
+    df =ff.get_prices(tick,startdate,middate)
+    df2= ff.get_prices(tick,middate,enddate)
+
+
 
     X = df[1].as_matrix().reshape(len(df[1]), 1)
+    X2 =df2[1].as_matrix().reshape(len(df2[1]), 1)
     y = []
     start_price = []
-    print(df[1])#.ravel()
+    #.ravel()
     for r in range(df[0].shape[1]):
-        y.append(df[0]['open'].iloc[:,r].as_matrix().reshape(df[0].shape[0], 1).ravel())
-        start_price.append(df[0]['open'].iloc[0,r])
-    print (start_price)
-    price=[]
-    for i in range (len(y[0])):
-        avg=[]
-        for j in range (len(weights)):
-            avg.append((y[j][i]/start_price[j])*100*weights[j])
-        price.append(sum(avg))
-    print (price)
+        start_price.append(df[0]['open'].iloc[0, r])
+    price = prices_change(df,weights,start_price)
+    price2= prices_change(df2,weights,start_price)
     plt.plot(X, price, color='darkgreen', label='data')
+    plt.plot(X2, price2, color='red', label='data')
+
+    plt.xlabel('Data')
+    plt.ylabel('Wartość w procentach')
+    plt.title('Zmiana Wartości portfolio')
     plt.show()
+
+
+def prices_change (df,weights,start_price):
+    y = []
+    # .ravel()
+    for r in range(df[0].shape[1]):
+        y.append(df[0]['open'].iloc[:, r].as_matrix().reshape(df[0].shape[0], 1).ravel())
+    price = []
+    for i in range(len(y[0])):
+        avg = []
+        for j in range(len(weights)):
+            avg.append((y[j][i] / start_price[j]) * 100 * weights[j])
+        price.append(sum(avg))
+    return (price)
+
 

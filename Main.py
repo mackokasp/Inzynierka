@@ -1,6 +1,7 @@
 import Finance as ff
 import Optimizer as opt
 import Graph as gg
+
 import GUI as gi
 
 import numpy as numpy
@@ -8,9 +9,10 @@ import numpy.random as nrand
 import pandas
 import os
 import Prediction as pred
-tick = sorted(['AAPL','CNP', 'F', 'GE' ])
-rr= ff.get_prices(tick)
-gg.eval_results(rr,[0.5,0.5,0.0,0.0])
+import Sentiment as st
+st.main()
+tick = sorted(['AAN','CNP', 'F', 'GE' ])
+gg.eval_results(tick,[0.5,0.5,0.0,0.0],2000,2017)
 #pred.prediction(rr['date'],rr['open'])
 #gi.start()
 '''
