@@ -20,7 +20,7 @@ def benchmark_data():
      global benchmark
      dir = os.path.dirname(__file__)
      dir = dir + '\sp500.csv'
-     print (dir)
+
      df =pd.read_csv(dir)
      df=df.dropna()
      benchmark = df
@@ -97,12 +97,12 @@ def year_returns (tickers,yearfrom ,yearto ):
                 endprice = data2.iloc[-1, j]
                 ret = (endprice - startprice) / startprice
                 rets.append(ret)
-                print (rets)
+
             frets.append(rets)
 
 
 
-    print (frets)
+
     df = pd.DataFrame(frets,columns=tickers)
     return df
 
@@ -254,11 +254,19 @@ def sortino_ratio( returns, rf=0.03, target=0):
     return (er - rf) / math.sqrt(lpm(returns, target, 1))
 
 def portfolio_omega(returns,weights,rf=0.03,target =0.1):
+    global gtarget
+    if gtarget is not None:
+        target = gtarget
+        rf = target
     omega = 0
     weights = normalize(weights)
+    rets =0
     for i in range(0, returns.shape[1]):
-        rr = returns.iloc[:, i]
-        omega = omega_ratio(rr.as_matrix( ),rf=rf,target=target) * weights[i] + omega
+        rr = returns.iloc[:, i] * weights[i]
+        rr=rr.as_matrix()
+        #print (rr)
+        rets=rets+rr
+    omega = omega2(rets,target=target)
     return  omega
 
 

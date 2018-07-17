@@ -29,9 +29,8 @@ def omega_opt( weights):
     global returns
     omega=0
     weights=normalize(weights)
-    for i in range(0, returns.shape[1]):
-        rr = returns.iloc[:, i]
-        omega = ff.omega_ratio(rr.as_matrix()) * weights[i] + omega
+
+    omega = ff.portfolio_omega(returns,weights)
     return -1 * omega
 
 
@@ -166,6 +165,7 @@ def run_ampl_model(data,minW=0.01,maxW=0.6):
     dir = os.path.dirname(__file__)
     dir=dir+'\\'+'ampl'
     dir=dir.replace('/','\\')
+    print(dir)
     ampl = AMPL(Environment(dir))
     ampl.setOption('solver','C:\\AMPL\\minos.exe')
     ampl.read('omg2.txt')

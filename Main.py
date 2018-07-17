@@ -9,22 +9,30 @@ import numpy.random as nrand
 import pandas
 import os
 import Prediction as pred
-import Sentiment as st
-st.main()
-tick = sorted(['AAN','CNP', 'F', 'GE' ])
-gg.eval_results(tick,[0.5,0.5,0.0,0.0],2000,2017)
+
+
+
+
 #pred.prediction(rr['date'],rr['open'])
 #gi.start()
-'''
-tick = sorted(['AAPL','CNP', 'F', 'GE' ])
+
+tick = sorted(['AIR','CNP', 'F', 'GE','WMT'])
 tickers=sorted (['AAN','GM','AIR','BA','CNP', 'GE' ] )
+
 ff.set_target(0.3)
-r =ff.year_returns(tick,2010,2017)
+
+r =ff.year_returns(tick,2000,2016)
+
+
 opt.set_returns(r)
-sol =opt.optimize(ratio='omega',method='SLSQP')
+sol =opt.optimize(ratio='omega',method='lin')
+
+print (ff.portfolio_omega(r,sol))
+#gg.eval_results3(tick,['CHD'] ,'2014-01-01','2017-06-15')
+#gg.eval_results2(tick,sol ,'2013-04-01','2015-01-15')
 
 gg.draw_portfolios_omega(r,tick,sol)
-'''
+
 '''
 opt.set_returns(r)
 ff.set_target(0.3)
