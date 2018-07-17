@@ -167,6 +167,7 @@ def run_ampl_model(data,minW=0.01,maxW=0.6):
     dir=dir.replace('/','\\')
     print(dir)
     ampl = AMPL(Environment(dir))
+    #as
     ampl.setOption('solver','C:\\AMPL\\minos.exe')
     ampl.read('omg2.txt')
     data_file = generate_temp_data_file(data,minW=minW,maxW=maxW)
