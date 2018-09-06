@@ -1,7 +1,7 @@
 import Finance as ff
 import Optimizer as opt
 import Graph as gg
-
+import django
 import GUI as gi
 
 import numpy as numpy
@@ -14,20 +14,24 @@ import Prediction as pred
 
 
 #pred.prediction(rr['date'],rr['open'])
-#gi.start()
+
+
+gi.start()
 
 tick = sorted(['AIR','CNP', 'F', 'GE','WMT'])
 tickers=sorted (['AAN','GM','AIR','BA','CNP', 'GE' ] )
+gg.eval_results4(tick,2011,2015)
+ff.set_target(0.01)
 
-ff.set_target(0.3)
+r =ff.month_returns(tick,2011,2015)
+#w=ff.portfolio_omega2(r,[0.2,0.2,0.2,0.2,0.2],target=0.01)
 
-r =ff.year_returns(tick,2000,2016)
 
 
 opt.set_returns(r)
-sol =opt.optimize(ratio='omega',method='lin')
+sol =opt.optimize(ratio='omega',method='SLSQP')
 
-print (ff.portfolio_omega(r,sol))
+
 #gg.eval_results3(tick,['CHD'] ,'2014-01-01','2017-06-15')
 #gg.eval_results2(tick,sol ,'2013-04-01','2015-01-15')
 

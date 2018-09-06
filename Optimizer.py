@@ -30,7 +30,7 @@ def omega_opt( weights):
     omega=0
     weights=normalize(weights)
 
-    omega = ff.portfolio_omega(returns,weights)
+    omega = ff.portfolio_omega2(returns,weights)
     return -1 * omega
 
 
@@ -166,7 +166,9 @@ def run_ampl_model(data,minW=0.01,maxW=0.6):
     dir=dir+'\\'+'ampl'
     dir=dir.replace('/','\\')
     print(dir)
+    #ampl = AMPL()
     ampl = AMPL(Environment(dir))
+
     #asp
     ampl.setOption('solver','C:\\AMPL\\minos.exe')
     ampl.read('omg2.txt')

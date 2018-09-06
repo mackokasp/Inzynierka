@@ -5,7 +5,12 @@ import matplotlib.pyplot as plt
 import plotly.plotly as py
 import plotly.graph_objs as go
 import plotly
-plotly.tools.set_credentials_file(username='kasprzyk_maciej', api_key='Sv8dKdTSuABfjDOiQ1l5')
+import matplotlib.image as mpimg
+import tkinter as tk
+from PIL import Image, ImageTk
+import os
+
+plotly.tools.set_credentials_file(username='kasprzyk_maciej', api_key='vUAhsEfbBaTYBpZWsBFs')
 
 def draw_portfolios_omega(ddf,ticker,optimal=None):
     df=ddf
@@ -50,7 +55,7 @@ def draw_portfolios_omega(ddf,ticker,optimal=None):
 
 
 
-        omega2 =  ff.portfolio_omega(ddf,optimal)
+        omega2 =  ff.portfolio_omega2(ddf,optimal)
         ret = np.dot(optimal, returns_annual)
         volatility = ff.portfolio_vol(ddf, optimal)
         plt.scatter(x=volatility, y=ret, c='blue', marker='x')
@@ -93,17 +98,21 @@ def draw_table(df,optimal):
         header=dict(values=['   ','Market(SP500)', 'Optimal'],
                     line=dict(color='#7D7F80'),
                     fill=dict(color='#a1c3d1'),
-                    align=['left'] * 10),
+                    align=['left'] * 4),
         cells=dict(values=[['Volatility','Omega' ,'Sharpe' ,'Sortino' ,'Calamr','Max Drowdown','Treynor','Evar','Information_Ratio','Upside_Potential'],
                            res,opt_res],
                    line=dict(color='#7D7F80'),
                    fill=dict(color='#EDFAFF'),
-                   align=['left'] * 10))
+                   align=['left'] * 4))
 
-    layout = dict(width=1500, height=3000)
+
+    layout = dict(width=1500, height=500)
     data = [trace]
     fig = dict(data=data, layout=layout)
-    py.plot(fig, filename='styled_table')
+    py.image.save_as(fig, filename='tabela.png')
+
+    Image.open('tabela.png').show()
+    #plt.show()
 
 
 
@@ -427,11 +436,11 @@ def eval_results2(tick,weights,yearfrom,yearto):
     plt.show()
 
 
-def eval_results3(tick,tick2,yearfrom,yearto):
+def eval_results3(tickers,tick2,yearfrom,yearto):
 
     startdate= str(yearfrom)
     enddate = str(yearto)
-    df =ff.get_prices(tick,startdate,enddate)
+    df =ff.get_prices(tickers,startdate,enddate)
     df2 = ff.get_prices(tick2, startdate, enddate)
 
 
@@ -455,11 +464,54 @@ def eval_results3(tick,tick2,yearfrom,yearto):
     plt.title('Zmiana Wartości portfolio')
     plt.show()
 
+def eval_results4(tickers,yearfrom,yearto):
+
+    colors=['darkgreen','blue','firebrick','darkgrey','cyan','magenta','yellow','black','lightblue','lightred','lime','brown','pink']
+
+    startdate = str(yearfrom)   +'-1-1'
+    enddate = str(yearto)   + '-12-31'
+    df =ff.get_prices(tickers,startdate,enddate)
+    print (df[0])
+    #df2 = ff.get_prices(tick2, startdate, enddate)
+
+
+
+
+
+    X = df[1].as_matrix().reshape(len(df[1]), 1)
+
+    y = []
+    prices = []
+    start_price = []
+    #.ravel()
+
+
+
+    for j in range(df[0].shape[1]):
+        start_price.append(df[0]['open'].iloc[0, j])
+        list=[]
+        for r in range(df[0].shape[0]):
+            list.append(100*df[0]['open'].iloc[r, j]/start_price[j])
+
+        prices.append(list)
+    plt.figure(figsize=(15, 7))
+    for  i in range(len(prices)):
+
+        plt.plot(X, prices[i], color=colors[i],label=tickers[i])
+    plt.xlabel('Data')
+    plt.ylabel('Wartość w procentach')
+    plt.title('Zmiana Wartości portfolio')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
+
+
+
 
 
 def prices_change (df,weights,start_price):
     y = []
-    # .ravel()
+
     for r in range(df[0].shape[1]):
         y.append(df[0]['open'].iloc[:, r].as_matrix().reshape(df[0].shape[0], 1).ravel())
     price = []
@@ -468,6 +520,21 @@ def prices_change (df,weights,start_price):
         for j in range(len(weights)):
             avg.append((y[j][i] / start_price[j]) * 100 * weights[j])
         price.append(sum(avg))
+
     return (price)
 
+
+def prices_change2 (df,start_price):
+    y = []
+
+    for r in range(df[0].shape[1]):
+        y.append(df[0]['open'].iloc[:, r].as_matrix().reshape(df[0].shape[0], 1).ravel())
+    price = []
+    for i in range(len(y[0])):
+        avg = []
+        for j in range(df[0].shape[0]):
+            avg.append((y[j][i] / start_price[j]) * 100 )
+        price.append(sum(avg))
+    print (price)
+    return (price)
 

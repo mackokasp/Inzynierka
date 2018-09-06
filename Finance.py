@@ -15,6 +15,12 @@ def set_target(targ):
     global gtarget
     gtarget = targ
 
+def set_average(returns):
+     av=numpy.mean(returns)
+     a1 = numpy.mean(av)
+     global gtarget
+     gtarget=a1
+
 
 def benchmark_data():
      global benchmark
@@ -34,13 +40,17 @@ def get_prices(ticker,dfrom ='2015-1-1',dto='2018-1-10'):
         data2 = quandl.get_table('WIKI/PRICES', ticker=ticker[0],
                                 qopts={'columns': ['date', 'Open', 'ticker']},
                                 date={'gte': dfrom, 'lte': dto}, paginate=True)
-        dates= data2['date']
+        dates= data2['date'].sort_values()
+
         res=[]
         clean = data.set_index('date')
         table = clean.pivot(columns='ticker')
         returns_daily = table
         data = returns_daily
         data = data.dropna()
+
+        data.sort_index(inplace=True)
+
         res.append(data)
         res.append(dates)
         return res
@@ -106,6 +116,45 @@ def year_returns (tickers,yearfrom ,yearto ):
     df = pd.DataFrame(frets,columns=tickers)
     return df
 
+
+def month_returns (tickers,yearfrom ,yearto ):
+    days=['31','28','31','30','31','30','31','31','30','31','30','31']
+    frets =[]
+    if 1==1:
+        datefrom = make_date(yearfrom, 1, 1)
+        dateto = make_date(yearto, 12, 31)
+        data = quandl.get_table('WIKI/PRICES', ticker=tickers,
+                                qopts={'columns': ['date', 'ticker', 'adj_close']},
+                                date={'gte': datefrom, 'lte': dateto}, paginate=True)
+        data= data.dropna()
+        data = data.pivot(index='date', columns='ticker', values='adj_close')
+        data=data.dropna(axis=0,how='any')
+
+        for i in range(yearto+1-yearfrom):
+
+            for m in range(1,13 ) :
+                sttime=pd.to_datetime(str(yearfrom+i) + str(m).zfill(2)+'01', format='%Y%m%d', errors='coerce')
+                entime =pd.to_datetime(str(yearfrom+i)+  str(m).zfill(2)+days[m-1], format='%Y%m%d', errors='coerce')
+                data2=data.loc[sttime:entime]
+
+                rets = []
+                for j in range(data.shape[1]):
+                    startprice = data2.iloc[0, j]
+                    endprice = data2.iloc[-1, j]
+                    ret = (endprice - startprice) / startprice
+                    rets.append(ret)
+
+
+                frets.append(rets)
+
+
+
+
+
+
+
+    df = pd.DataFrame(frets,columns=tickers)
+    return df
 
 
 
@@ -232,8 +281,8 @@ def omega2(returns, target =0.0):
     downside = 0.0
     if gtarget is not None:
         target = gtarget
-
     for rr in returns:
+
         if rr > target:
             upside = upside + (rr-target)
         else:
@@ -266,6 +315,24 @@ def portfolio_omega(returns,weights,rf=0.03,target =0.1):
         rr=rr.as_matrix()
         #print (rr)
         rets=rets+rr
+
+    omega = omega2(rets,target=target)
+    return  omega
+
+def portfolio_omega2(returns,weights,rf=0.03,target =0.1):
+    global gtarget
+    if gtarget is not None:
+        target = gtarget
+        rf = target
+    omega = 0
+    weights = normalize(weights)
+    rets =[]
+    for i in range(0, returns.shape[0]):
+        rr=0
+        for j in range(0,returns.shape[1]):
+            rr = returns.iloc[i, j] * weights[j] + rr
+        rets.append(rr)
+
     omega = omega2(rets,target=target)
     return  omega
 
