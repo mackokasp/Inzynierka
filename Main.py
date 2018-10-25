@@ -16,11 +16,11 @@ import Prediction as pred
 #pred.prediction(rr['date'],rr['open'])
 
 
-gi.start()
+#gi.start()
 
 tick = sorted(['AIR','CNP', 'F', 'GE','WMT'])
 tickers=sorted (['AAN','GM','AIR','BA','CNP', 'GE' ] )
-gg.eval_results4(tick,2011,2015)
+#gg.eval_results4(tick,2011,2015)
 ff.set_target(0.01)
 
 r =ff.month_returns(tick,2011,2015)
@@ -29,7 +29,7 @@ r =ff.month_returns(tick,2011,2015)
 
 
 opt.set_returns(r)
-sol =opt.optimize(ratio='omega',method='SLSQP')
+sol =opt.optimize(ratio='omega',method='lin')
 
 
 #gg.eval_results3(tick,['CHD'] ,'2014-01-01','2017-06-15')

@@ -57,6 +57,8 @@ def calmar_opt (weights):
 
 def optimize(ratio='omega',method='SLSQP',minW=0.01,maxW=0.8,weights =None):
     global returns
+    os.environ['PATH'] = 'C:\\Users\\PC\INŻ\\ampl4'+ '|' + os.environ['PATH']
+    print (os.environ['PATH'])
     if weights is None:
         weights = []
         for i in range(0,returns.shape[1]):
@@ -163,14 +165,17 @@ def generate_temp_data_file( data,minW=0.01,maxW=0.6):
 
 def run_ampl_model(data,minW=0.01,maxW=0.6):
     dir = os.path.dirname(__file__)
-    dir=dir+'\\'+'ampl'
-    dir=dir.replace('/','\\')
-    print(dir)
+    #dir=dir+'\\'+'ampl'
+    dir='C:\\Users\\PC\\INŻ\\ampl4\\+'
+    #dir=dir.replace('/','\\')
+
+
     #ampl = AMPL()
     ampl = AMPL(Environment(dir))
 
     #asp
-    ampl.setOption('solver','C:\\AMPL\\minos.exe')
+    ampl.setOption('solver',dir+'\minos.exe')
+    print (dir)
     ampl.read('omg2.txt')
     data_file = generate_temp_data_file(data,minW=minW,maxW=maxW)
     ampl.readData(data_file.name)
@@ -180,10 +185,9 @@ def run_ampl_model(data,minW=0.01,maxW=0.6):
 
     v0=ampl.getVariable('v0').getValues().toPandas()
     sol = []
-    print (x.shape[1])
+
     for i in range(x.shape[1]):
         sol.append(x.iloc[0,i]/v0.iloc[0,0])
-    print (sol)
 
 
     return sol

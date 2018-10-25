@@ -64,7 +64,7 @@ def draw_portfolios_omega(ddf,ticker,optimal=None):
     plt.title(build_description(ticker,optimal))
     plt.annotate(str(omega2),xy=(volatility,ret))
     ax=plt.subplot()
-    str2 ='Target:'+str(ff.gtarget*100)+'%'
+    str2 ='Target:'+"{0:.3f}%".format(ff.gtarget*100)
     ax.text(v[0],v[3]*0.8, str2, style='italic',fontsize=16
             , bbox={'facecolor': 'red', 'alpha': 0.1, 'pad': 0.0}
            )
