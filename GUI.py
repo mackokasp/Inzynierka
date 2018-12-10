@@ -1,15 +1,19 @@
-from tkinter import Tk, Label, Button,Entry,OptionMenu,StringVar
+import copy
 import tkinter as tk
-import  Finance as fn
+from tkinter import Tk, Label, Button, Entry, OptionMenu
+
+import Finance as fn
 import Graph as gp
 import Optimizer as opt
-import copy
+
+
 #from PIL import ImageTk, Image
 
 class MyFirstGUI:
 
 
     ticks = sorted(['AAN', 'CNP', 'GE', 'F', 'WMT', 'T', 'VZ', 'RHT','PG' ])
+    a = 0
 
 
 
