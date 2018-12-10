@@ -7,7 +7,7 @@ import plotly.graph_objs as go
 import plotly
 import matplotlib.image as mpimg
 import tkinter as tk
-from PIL import Image, ImageTk
+#from PIL import Image, ImageTk
 import os
 
 plotly.tools.set_credentials_file(username='kasprzyk_maciej', api_key='vUAhsEfbBaTYBpZWsBFs')
@@ -31,7 +31,7 @@ def draw_portfolios_omega(ddf,ticker,optimal=None):
         returns = np.dot(weights, returns_annual)
         volatility = ff.portfolio_vol(df,weights.T)
 
-        omega = ff.portfolio_omega(df,weights.T)
+        omega = ff.portfolio_omega2(df,weights.T)
 
         omega_ratio.append(omega)
         port_returns.append(returns)
@@ -52,7 +52,6 @@ def draw_portfolios_omega(ddf,ticker,optimal=None):
     df.plot.scatter(x='Volatility', y='Returns', c='Omega Ratio',  cmap='RdYlGn', edgecolors='black', figsize=(10, 8), grid=True)
     v=plt.axis()
     if optimal is not None:
-
 
 
         omega2 =  ff.portfolio_omega2(ddf,optimal)
@@ -89,13 +88,13 @@ def build_description(ticker,optimal):
 
 
 def draw_table(df,optimal):
-    print (optimal)
+
 
     res = prepare_portfolio_data(df)
     opt_res = prepare_optimal(df,optimal)
 
     trace = go.Table(
-        header=dict(values=['   ','Market(SP500)', 'Optimal'],
+        header=dict(values=['   ','Average', 'Optimal'],
                     line=dict(color='#7D7F80'),
                     fill=dict(color='#a1c3d1'),
                     align=['left'] * 4),
@@ -111,7 +110,7 @@ def draw_table(df,optimal):
     fig = dict(data=data, layout=layout)
     py.image.save_as(fig, filename='tabela.png')
 
-    Image.open('tabela.png').show()
+    ##Image.open('tabela.png').show()
     #plt.show()
 
 
@@ -225,7 +224,7 @@ def prepare_portfolio_data (df):
         weights /= np.sum(weights)
         returns = np.dot(weights, returns_annual)
         volatility = ff.portfolio_vol(df, weights.T)
-        omega=ff.portfolio_omega(df,weights)
+        omega=ff.portfolio_omega2(df,weights)
         for i in range(0, df.shape[1]):
             paper = df.iloc[:, i].as_matrix()
             e=np.mean(paper)
@@ -471,7 +470,6 @@ def eval_results4(tickers,yearfrom,yearto):
     startdate = str(yearfrom)   +'-1-1'
     enddate = str(yearto)   + '-12-31'
     df =ff.get_prices(tickers,startdate,enddate)
-    print (df[0])
     #df2 = ff.get_prices(tick2, startdate, enddate)
 
 

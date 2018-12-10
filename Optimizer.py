@@ -2,8 +2,9 @@ import Finance as ff
 from scipy.optimize import minimize,fmin
 import sys
 import numpy as np
-import tempfile
+
 from amplpy import AMPL,Environment
+#import amplpy
 import os
 returns= []
 def set_returns (ret):
@@ -58,7 +59,6 @@ def calmar_opt (weights):
 def optimize(ratio='omega',method='SLSQP',minW=0.01,maxW=0.8,weights =None):
     global returns
     os.environ['PATH'] = 'C:\\Users\\PC\INŻ\\ampl4'+ '|' + os.environ['PATH']
-    print (os.environ['PATH'])
     if weights is None:
         weights = []
         for i in range(0,returns.shape[1]):
@@ -82,6 +82,10 @@ def optimize(ratio='omega',method='SLSQP',minW=0.01,maxW=0.8,weights =None):
         elif method =='lin':
             sol = run_ampl_model(returns,minW=minW,maxW=maxW)
             return sol
+        elif method =='elin':
+            sol = run_ampl_model(returns,minW=minW,maxW=maxW,ex=1)
+            return sol
+
 
         else:
             sol = minimize(omega_opt, method=method, x0=weights)
@@ -139,7 +143,8 @@ def write_data_to_temp_file( tmp_file, returns ,maxW =0.6,minW=0.01):
     means=[]
     weights=[]
     for i in range (returns.shape[1]):
-        means.append(np.mean(returns.iloc[:,i])*returns.shape[0])
+       # means.append(np.mean(returns.iloc[:,i])*returns.shape[0])
+        means.append(np.mean(returns.iloc[:, i]))
     for i in range(returns.shape[0]):
         weights.append(float(1) / returns.shape[0])
     print_1d_param(tmp_file, means, 'u')
@@ -150,7 +155,31 @@ def write_data_to_temp_file( tmp_file, returns ,maxW =0.6,minW=0.01):
     print_scalar_param(tmp_file, maxW, 'maxW')
     print_scalar_param(tmp_file, minW, 'minW')
 
+def write_data_to_temp_file_ex( tmp_file, returns ,maxW =0.6,minW=0.01):
+    print_2d_param(tmp_file, returns, 'r')
+    means=[]
+    weights=[]
+    time_means=[]
+    for i in range (returns.shape[1]):
+        #means.append(np.mean(returns.iloc[:,i])*returns.shape[0])
+        means.append(np.mean(returns.iloc[:, i]) )
+    for i in range(returns.shape[0]):
+        weights.append(float(1) / returns.shape[0])
 
+    for i in range(returns.shape[0]):
+        time_means.append(np.mean(returns.iloc[i,:])*returns.shape[1])
+        #print (returns.iloc[1,:])
+
+
+
+    print_1d_param(tmp_file, means, 'u')
+    print_1d_param(tmp_file, weights, 'p')
+    print_1d_param(tmp_file, time_means, 'ra')
+    print_scalar_param(tmp_file, returns.shape[0], 'T')
+    print_scalar_param(tmp_file, ff.gtarget, 'rf')
+    print_scalar_param(tmp_file, returns.shape[1], 'R')
+    print_scalar_param(tmp_file, maxW, 'maxW')
+    print_scalar_param(tmp_file, minW, 'minW')
 
 
 
@@ -162,11 +191,16 @@ def generate_temp_data_file( data,minW=0.01,maxW=0.6):
     tmp_file.seek(0)
     return tmp_file
 
+def generate_temp_data_file_ex( data,minW=0.01,maxW=0.6):
+    tmp_file = open('data.dat', 'w')
+    write_data_to_temp_file_ex(tmp_file, data,maxW,minW)
+    tmp_file.seek(0)
+    return tmp_file
 
-def run_ampl_model(data,minW=0.01,maxW=0.6):
+
+def run_ampl_model(data,minW=0.01,maxW=0.6,ex=0):
     dir = os.path.dirname(__file__)
-    #dir=dir+'\\'+'ampl'
-    dir='C:\\Users\\PC\\INŻ\\ampl4\\+'
+    dir='C:\\Biblioteki\\AMPL\\ampl.mswin64'
     #dir=dir.replace('/','\\')
 
 
@@ -175,15 +209,26 @@ def run_ampl_model(data,minW=0.01,maxW=0.6):
 
     #asp
     ampl.setOption('solver',dir+'\minos.exe')
-    print (dir)
-    ampl.read('omg2.txt')
-    data_file = generate_temp_data_file(data,minW=minW,maxW=maxW)
+    if ex<1:
+        ampl.read('omg3.txt')
+        data_file = generate_temp_data_file(data, minW=minW, maxW=maxW)
+    else:
+        ampl.read('eomg.txt')
+        data_file = generate_temp_data_file_ex(data, minW=minW, maxW=maxW)
+
+
+
+    #data_file=open('data_pattern.txt')
     ampl.readData(data_file.name)
     data_file.close()
     ampl.solve()
     x = get_np_array_from_variable(ampl, 'x')
+    #x=ampl.getVariable('x').getValues().toPandas()
+
+
 
     v0=ampl.getVariable('v0').getValues().toPandas()
+
     sol = []
 
     for i in range(x.shape[1]):
@@ -191,6 +236,9 @@ def run_ampl_model(data,minW=0.01,maxW=0.6):
 
 
     return sol
+
+
+
 
 
 def get_np_array_from_variable( ampl, name):
@@ -232,18 +280,6 @@ subject to
  c7: v0 <= 10000 ;
  
  c8{i in 1..R}: x[i]>=0 ;
-data;
-param T := 3 ;
-param rf = 0.03 ;
-param R = 3 ; 
- param u := 1 0.1 2 0.1 3 0.1 ;
- 
- param p := 1 0.34  2 0.33 3 0.33 ;
- 
- param r: 1  2  3 :=
-      1  0.1 0.1 0.1
-      2  0.1 0.1 0.1
-      3  0.1 0.1 0.1 ;
 
 
     

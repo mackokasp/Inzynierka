@@ -1,5 +1,5 @@
 import quandl
-import numpy
+import numpy as np
 import math
 import pandas as pd
 import os
@@ -16,8 +16,8 @@ def set_target(targ):
     gtarget = targ
 
 def set_average(returns):
-     av=numpy.mean(returns)
-     a1 = numpy.mean(av)
+     av=np.mean(returns)
+     a1 = np.mean(av)
      global gtarget
      gtarget=a1
 
@@ -47,9 +47,12 @@ def get_prices(ticker,dfrom ='2015-1-1',dto='2018-1-10'):
         table = clean.pivot(columns='ticker')
         returns_daily = table
         data = returns_daily
-        data = data.dropna()
+
+        data = data.dropna(axis=1)
+
 
         data.sort_index(inplace=True)
+
 
         res.append(data)
         res.append(dates)
@@ -174,33 +177,33 @@ def get_return(ticker ,dateFrom,dateTo):
 
 
 def vol(returns):
-    return numpy.std(returns)
+    return np.std(returns)
 
 
 def lpm(returns, threshold, order):
-    threshold_array = numpy.empty(len(returns))
+    threshold_array = np.empty(len(returns))
     threshold_array.fill(threshold)
     diff = threshold_array - returns
     diff = diff.clip(min=0)
-    db= numpy.sum(diff ** order) / len(returns)
+    db= np.sum(diff ** order) / len(returns)
     return db
 
 def hpm(returns, threshold, order):
-    threshold_array = numpy.empty(len(returns))
+    threshold_array = np.empty(len(returns))
     threshold_array.fill(threshold)
     diff = returns - threshold_array
     diff = diff.clip(min=0)
-    return numpy.sum(diff ** order) / len(returns)
+    return np.sum(diff ** order) / len(returns)
 
 
 def var(returns, alpha):
-    sorted_returns = numpy.sort(returns)
+    sorted_returns = np.sort(returns)
     index = int(alpha * len(sorted_returns))
     return abs(sorted_returns[index])
 
 
 def cvar(returns, alpha):
-    sorted_returns = numpy.sort(returns)
+    sorted_returns = np.sort(returns)
     index = int(alpha * len(sorted_returns))
     sum_var = sorted_returns[0]
     for i in range(1, index):
@@ -218,7 +221,7 @@ def excess_var(er, returns, rf=0.0, target=0.0):
 
 def information_ratio(returns, benchmark):
     diff = returns - benchmark
-    return numpy.mean(diff) / vol(diff)
+    return np.mean(diff) / vol(diff)
 
 
 def treynor_ratio(er, returns, market, rf=0.0):
@@ -250,16 +253,16 @@ def upside_potential_ratio(returns, target=0):
 
 def beta(returns, market):
     # Create a matrix of [returns, market]
-    m = numpy.matrix([returns, market])
+    m = np.matrix([returns, market])
     # Return the covariance of m divided by the standard deviation of the market returns
-    return numpy.cov(m)[0][1] / numpy.std(market)
+    return np.cov(m)[0][1] / np.std(market)
 
 
 def sharpe_ratio( returns, rf=0.00):
     if gtarget is not None:
         target = gtarget
         rf=target
-    er = numpy.mean(returns)
+    er = np.mean(returns)
     return (er - rf) / vol(returns)
 
 
@@ -271,7 +274,7 @@ def omega_ratio(returns, rf=0.03, target=0.05):
     if gtarget is not None:
         target= gtarget
         rf=target
-    er = numpy.mean(returns)
+    er = np.mean(returns)
     omega =(er - rf) / lpm(returns, target, 1)
     return omega
 
@@ -299,7 +302,7 @@ def sortino_ratio( returns, rf=0.03, target=0):
     if gtarget is not None:
         target = gtarget
         rf=target
-    er = numpy.mean(returns)
+    er = np.mean(returns)
     return (er - rf) / math.sqrt(lpm(returns, target, 1))
 
 def portfolio_omega(returns,weights,rf=0.03,target =0.1):
@@ -317,6 +320,7 @@ def portfolio_omega(returns,weights,rf=0.03,target =0.1):
         rets=rets+rr
 
     omega = omega2(rets,target=target)
+
     return  omega
 
 def portfolio_omega2(returns,weights,rf=0.03,target =0.1):
@@ -359,8 +363,8 @@ def modigliani_ratio( returns, benchmark, rf):
     if gtarget is not None:
         target = gtarget
         rf=target
-    er=numpy.mean(returns)
-    np_rf = numpy.empty(len(returns))
+    er=np.mean(returns)
+    np_rf = np.empty(len(returns))
     np_rf.fill(rf)
     rdiff = returns - np_rf
     bdiff = benchmark - np_rf
@@ -403,4 +407,4 @@ def prices(returns, base):
     s = [base]
     for i in range(len(returns)):
         s.append(base * (1 + returns[i]))
-    return numpy.array(s)
+    return np.array(s)

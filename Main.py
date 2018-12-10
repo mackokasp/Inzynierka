@@ -6,9 +6,37 @@ import GUI as gi
 
 import numpy as numpy
 import numpy.random as nrand
-import pandas
+import pandas as pd
 import os
 import Prediction as pred
+
+gi.start()
+def randomize (metadata,yearfrom, yearto, num):
+    tickers=[]
+    yearfrom_date = pd.to_datetime(str(yearfrom) + '0101', format='%Y%m%d', errors='coerce')
+    yearto_date = pd.to_datetime(str(yearto) + '1231', format='%Y%m%d', errors='coerce')
+
+    for i in range (metadata.shape[0]):
+
+        st_eod   = pd.to_datetime(metadata.iloc[i,4], format='%Y-%m-%d', errors='coerce')
+
+        end_eod = pd.to_datetime(metadata.iloc[i,5], format='%Y-%m-%d', errors='coerce')
+
+        if  st_eod < yearfrom_date and end_eod > yearto_date:
+            tickers.append(metadata.iloc[i,0])
+            if len(tickers) > 3 :
+                break ;
+    return tickers
+
+eod = pd.read_csv('EOD_metadata.csv')
+tick =randomize(eod,2013,2013,0)
+print (tick)
+#print (eod.shape[0])
+
+
+
+
+
 
 
 
@@ -18,24 +46,33 @@ import Prediction as pred
 
 #gi.start()
 
-tick = sorted(['AIR','CNP', 'F', 'GE','WMT'])
-tickers=sorted (['AAN','GM','AIR','BA','CNP', 'GE' ] )
-#gg.eval_results4(tick,2011,2015)
+tick = sorted(['AIR','AAN', 'F', 'GE','WMT'])
+tickers=sorted (['AAN','GM','AIR','BA','CNP', 'GE' ,'V'] )
+#gg.eval_results4(tick,2011,2012)
 ff.set_target(0.01)
-
-r =ff.month_returns(tick,2011,2015)
+tick =randomize(eod,2013,2013,0)
+print(tick)
+r =ff.month_returns(tick,2013,2013)
 #w=ff.portfolio_omega2(r,[0.2,0.2,0.2,0.2,0.2],target=0.01)
 
 
 
 opt.set_returns(r)
-sol =opt.optimize(ratio='omega',method='lin')
+
+sol =opt.optimize(ratio='omega',method='SLSQP')
+
+sol=opt.optimize(ratio='omega',method='lin',minW=0.01,maxW=1.0)
 
 
 #gg.eval_results3(tick,['CHD'] ,'2014-01-01','2017-06-15')
 #gg.eval_results2(tick,sol ,'2013-04-01','2015-01-15')
 
 gg.draw_portfolios_omega(r,tick,sol)
+
+
+
+
+
 
 '''
 opt.set_returns(r)

@@ -4,9 +4,12 @@ import  Finance as fn
 import Graph as gp
 import Optimizer as opt
 import copy
-from PIL import ImageTk, Image
+#from PIL import ImageTk, Image
 
 class MyFirstGUI:
+
+
+    ticks = sorted(['AAN', 'CNP', 'GE', 'F', 'WMT', 'T', 'VZ', 'RHT' ])
 
 
 
@@ -43,11 +46,13 @@ class MyFirstGUI:
             Entry(textvariable=self.tickers[i]).place(x=200, y=100+i*30, width=50)
             Label(text="%").place(x=280, y=100+i*30)
             Label(text="Akcja "+str(i+1)).place(x=150, y=100 + i * 30)
-        self.tickers[0].set('AAN')
-        self.tickers[1].set('CNP')
-        self.tickers[2].set('F')
-        self.tickers[3].set('GE')
-        self.tickers[4].set('WMT')
+            j=0
+        for i in self.ticks:
+            self.tickers[j].set(i)
+            j=j+1
+
+
+
         Button(mw, text="Optymalizuj", command=self.optimize).place(x=120, y=550, width=100)
         self.graph_btn=Button(mw, text="Pokaż wykres",state=tk.DISABLED, command=self.draw)
         self.table_btn = Button(mw, text="Rysuj tabele", state=tk.DISABLED, command=self.table)
@@ -58,9 +63,9 @@ class MyFirstGUI:
 
         self.yearfrom = tk.StringVar(mw)
         self.method = tk.StringVar(mw)
-        self.yearfrom.set('2000')  # initial value
-        self.option = OptionMenu(mw, self.yearfrom, "1980", "1990", "1995", "2000", "2005", "2010", "2015").place(x=470, y=75, width=80)
-        self.option = OptionMenu(mw, self.method, "SLSQP", "lin").place(x=510,y=115,width=80)
+        self.yearfrom.set('2010')  # initial value
+        self.option = OptionMenu(mw, self.yearfrom, "1980", "1990", "1995", "2000", "2005","2008", "2010","2012","2013","2014","2015").place(x=470, y=75, width=80)
+        self.option = OptionMenu(mw, self.method, "SLSQP", "lin","elin").place(x=510,y=115,width=80)
         self.yearto = tk.StringVar(mw)
         self.yearto.set('2017')  # initial value
         self.method.set('SLSQP')
