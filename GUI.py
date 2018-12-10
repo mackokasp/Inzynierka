@@ -9,7 +9,8 @@ import copy
 class MyFirstGUI:
 
 
-    ticks = sorted(['AAN', 'CNP', 'GE', 'F', 'WMT', 'T', 'VZ', 'RHT' ])
+    ticks = sorted(['AAN', 'CNP', 'GE', 'F', 'WMT', 'T', 'VZ', 'RHT','PG' ])
+
 
 
 

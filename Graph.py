@@ -92,6 +92,12 @@ def draw_table(df,optimal):
 
     res = prepare_portfolio_data(df)
     opt_res = prepare_optimal(df,optimal)
+    go.Layout(margin=go.layout.Margin(
+        l=1,
+        r=1,
+        b=1,
+        t=1,
+        pad=1))
 
     trace = go.Table(
         header=dict(values=['   ','Average', 'Optimal'],

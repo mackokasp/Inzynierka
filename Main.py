@@ -29,8 +29,8 @@ def randomize (metadata,yearfrom, yearto, num):
     return tickers
 
 eod = pd.read_csv('EOD_metadata.csv')
-tick =randomize(eod,2013,2013,0)
-print (tick)
+
+
 #print (eod.shape[0])
 
 
