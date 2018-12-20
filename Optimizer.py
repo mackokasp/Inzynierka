@@ -1,11 +1,13 @@
-import Finance as ff
-from scipy.optimize import minimize,fmin
-import sys
-import numpy as np
-
-from amplpy import AMPL,Environment
 #import amplpy
+# import amplpy
 import os
+
+import numpy as np
+from amplpy import AMPL, Environment
+from scipy.optimize import minimize, fmin
+
+import Finance as ff
+
 returns= []
 def set_returns (ret):
     global returns
@@ -85,6 +87,10 @@ def optimize(ratio='omega',method='SLSQP',minW=0.01,maxW=0.8,weights =None):
         elif method =='elin':
             sol = run_ampl_model(returns,minW=minW,maxW=maxW,ex=1)
             return sol
+        elif method == 'lin_lmt':
+            sol = run_ampl_model(returns, minW=minW, maxW=maxW, ex=2)
+            return sol
+
 
 
         else:
@@ -182,6 +188,23 @@ def write_data_to_temp_file_ex( tmp_file, returns ,maxW =0.6,minW=0.01):
     print_scalar_param(tmp_file, minW, 'minW')
 
 
+def write_data_to_temp_file_lmt(tmp_file, returns, maxW=0.6, minW=0.01, K=2):
+    print_2d_param(tmp_file, returns, 'r')
+    means = []
+    weights = []
+    for i in range(returns.shape[1]):
+        # means.append(np.mean(returns.iloc[:,i])*returns.shape[0])
+        means.append(np.mean(returns.iloc[:, i]))
+    for i in range(returns.shape[0]):
+        weights.append(float(1) / returns.shape[0])
+    print_1d_param(tmp_file, means, 'u')
+    print_1d_param(tmp_file, weights, 'p')
+    print_scalar_param(tmp_file, returns.shape[0], 'T')
+    print_scalar_param(tmp_file, ff.gtarget, 'rf')
+    print_scalar_param(tmp_file, returns.shape[1], 'R')
+    print_scalar_param(tmp_file, maxW, 'maxW')
+    print_scalar_param(tmp_file, minW, 'minW')
+    print_scalar_param(tmp_file, K, 'K');
 
 
 
@@ -198,6 +221,13 @@ def generate_temp_data_file_ex( data,minW=0.01,maxW=0.6):
     return tmp_file
 
 
+def generate_temp_data_file_lmt(data, minW=0.01, maxW=0.6):
+    tmp_file = open('data.dat', 'w')
+    write_data_to_temp_file_lmt(tmp_file, data, maxW, minW)
+    tmp_file.seek(0)
+    return tmp_file
+
+
 def run_ampl_model(data,minW=0.01,maxW=0.6,ex=0):
     dir = os.path.dirname(__file__)
     dir='C:\\Biblioteki\\AMPL\\ampl.mswin64'
@@ -207,14 +237,19 @@ def run_ampl_model(data,minW=0.01,maxW=0.6,ex=0):
     #ampl = AMPL()
     ampl = AMPL(Environment(dir))
 
-    #asp
-    ampl.setOption('solver',dir+'\minos.exe')
     if ex<1:
         ampl.read('omg3.txt')
         data_file = generate_temp_data_file(data, minW=minW, maxW=maxW)
+        ampl.setOption('solver', dir + '\minos.exe')
+    elif ex == 2:
+        ampl.read('omg_lmt.txt')
+        data_file = generate_temp_data_file_lmt(data, minW=minW, maxW=maxW)
+        ampl.setOption('solver', dir + '\cplex.exe')
+
     else:
         ampl.read('eomg.txt')
         data_file = generate_temp_data_file_ex(data, minW=minW, maxW=maxW)
+        ampl.setOption('solver', dir + '\minos.exe')
 
 
 

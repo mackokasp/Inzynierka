@@ -13,7 +13,7 @@ class MyFirstGUI:
 
 
     ticks = sorted(['AAN', 'CNP', 'GE', 'F', 'WMT', 'T', 'VZ', 'RHT','PG' ])
-    a = 0
+
 
 
 
@@ -70,7 +70,7 @@ class MyFirstGUI:
         self.method = tk.StringVar(mw)
         self.yearfrom.set('2010')  # initial value
         self.option = OptionMenu(mw, self.yearfrom, "1980", "1990", "1995", "2000", "2005","2008", "2010","2012","2013","2014","2015").place(x=470, y=75, width=80)
-        self.option = OptionMenu(mw, self.method, "SLSQP", "lin","elin").place(x=510,y=115,width=80)
+        self.option = OptionMenu(mw, self.method, "SLSQP", "lin", "elin", "lin_lmt").place(x=510, y=115, width=80)
         self.yearto = tk.StringVar(mw)
         self.yearto.set('2017')  # initial value
         self.method.set('SLSQP')

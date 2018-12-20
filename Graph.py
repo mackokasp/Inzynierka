@@ -1,14 +1,13 @@
-import Finance as ff
-import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
-import plotly.plotly as py
-import plotly.graph_objs as go
+import numpy as np
+import pandas as pd
 import plotly
-import matplotlib.image as mpimg
-import tkinter as tk
+import plotly.graph_objs as go
+import plotly.plotly as py
+
+import Finance as ff
+
 #from PIL import Image, ImageTk
-import os
 
 plotly.tools.set_credentials_file(username='kasprzyk_maciej', api_key='vUAhsEfbBaTYBpZWsBFs')
 
@@ -88,30 +87,23 @@ def build_description(ticker,optimal):
 
 
 def draw_table(df,optimal):
-
-
-    res = prepare_portfolio_data(df)
-    opt_res = prepare_optimal(df,optimal)
-    go.Layout(margin=go.layout.Margin(
-        l=1,
-        r=1,
-        b=1,
-        t=1,
-        pad=1))
+    m = np.random.uniform(-0.03, 0.05, df.shape[0])
+    res = prepare_portfolio_data(df, m)
+    opt_res = prepare_optimal(df, optimal, m)
+    best_asset = prepare_best(df, optimal, m)
 
     trace = go.Table(
-        header=dict(values=['   ','Average', 'Optimal'],
+        header=dict(values=['   ', 'Average', 'Optimal', 'Best Asset'],
                     line=dict(color='#7D7F80'),
                     fill=dict(color='#a1c3d1'),
                     align=['left'] * 4),
         cells=dict(values=[['Volatility','Omega' ,'Sharpe' ,'Sortino' ,'Calamr','Max Drowdown','Treynor','Evar','Information_Ratio','Upside_Potential'],
-                           res,opt_res],
+                           res, opt_res, best_asset],
                    line=dict(color='#7D7F80'),
                    fill=dict(color='#EDFAFF'),
                    align=['left'] * 4))
 
-
-    layout = dict(width=1500, height=500)
+    layout = dict(width=500, height=500)
     data = [trace]
     fig = dict(data=data, layout=layout)
     py.image.save_as(fig, filename='tabela.png')
@@ -120,9 +112,35 @@ def draw_table(df,optimal):
     #plt.show()
 
 
+def prepare_best(df, optimal, m):
+    max = 0
+    indx = 0
+    result = []
+
+    for i in range(len(optimal)):
+        if optimal[i] > max:
+            max = optimal[i]
+            indx = i
+    paper = df.iloc[:, indx].as_matrix()
+    e = np.mean(paper)
+    result.append(ff.vol(paper))
+    result.append(ff.omega2(paper))
+    result.append(ff.sharpe_ratio(paper))
+    result.append(ff.sortino_ratio(paper))
+    result.append(ff.calmar_ratio(paper))
+    result.append(ff.max_dd(paper))
+    result.append(ff.treynor_ratio(e, paper, m))
+    result.append(ff.excess_var(e, paper))
+    result.append(ff.information_ratio(paper, m))
+    result.append(ff.upside_potential_ratio(paper))
+    result_format = []
+    for i in range(len(result)):
+        result_format.append("{0:.5f}".format(result[i]))
+
+    return result_format
 
 
-def prepare_optimal(df,opt):
+def prepare_optimal(df, opt, m):
     port_returns = []
     port_volatility = []
     omega_ratio = []
@@ -145,7 +163,7 @@ def prepare_optimal(df,opt):
     inf=0
     upside=0
     volatility = ff.portfolio_vol(df, opt)
-    m = np.random.uniform(-0.03, 0.05, df.shape[0])
+
     for i in range(0, df.shape[1]):
         paper = df.iloc[:, i].as_matrix()
         e = np.mean(paper)
@@ -174,7 +192,7 @@ def prepare_optimal(df,opt):
         upside_ratio.append(upside)
 
     result.append(np.mean(port_volatility))
-    result.append(omega)
+    result.append(ff.portfolio_omega2(df, opt))
     result.append(np.mean(sharpe_ratio))
     result.append(np.mean(sortino_ratio))
     result.append(np.mean(calmar_ratio))
@@ -183,13 +201,13 @@ def prepare_optimal(df,opt):
     result.append(np.mean(evar_ratio))
     result.append(np.mean(information_ratio))
     result.append(np.mean(upside_ratio))
-    return result
+    result_format = []
+    for i in range(len(result)):
+        result_format.append("{0:.5f}".format(result[i]))
+    return result_format
 
 
-
-
-
-def prepare_portfolio_data (df):
+def prepare_portfolio_data(df, m):
     returns_annual = df.mean() * 251
     port_returns = []
     port_volatility = []
@@ -212,7 +230,6 @@ def prepare_portfolio_data (df):
     print(df.shape[0])
     num_portfolios = 15
     np.random.seed(102)
-    m = np.random.uniform(-0.03, 0.05, df.shape[0])
 
     # populate the empty lists with each portfolios returns,risk and weights
     for portfolio in range(num_portfolios):
@@ -269,8 +286,12 @@ def prepare_portfolio_data (df):
     result.append(np.mean(evar_ratio))
     result.append(np.mean(information_ratio))
     result.append(np.mean(upside_ratio))
+    result_format = []
+    for i in range(len(result)):
+        result_format.append("{0:.5f}".format(result[i]))
 
-    return result
+    return result_format
+
 
 
 
