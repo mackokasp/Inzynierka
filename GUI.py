@@ -18,6 +18,7 @@ class MyFirstGUI:
 
 
 
+
     def __init__(self, mw):
         self.num =15
         self.mw = mw
@@ -28,6 +29,7 @@ class MyFirstGUI:
         self.mystring2 = tk.StringVar(mw,'0')
         self.weights=[]
         self.tickers=[]
+        self.max_number = tk.StringVar(mw, 3)
         self.freq =tk.StringVar(mw,'roczny')
         self.label = Label(mw, text="Optymalizacja omega" ,font='Helvatica')
         self.label.pack()
@@ -70,7 +72,8 @@ class MyFirstGUI:
         self.method = tk.StringVar(mw)
         self.yearfrom.set('2010')  # initial value
         self.option = OptionMenu(mw, self.yearfrom, "1980", "1990", "1995", "2000", "2005","2008", "2010","2012","2013","2014","2015").place(x=470, y=75, width=80)
-        self.option = OptionMenu(mw, self.method, "SLSQP", "lin", "elin", "lin_lmt").place(x=510, y=115, width=80)
+        self.option = OptionMenu(mw, self.method, "SLSQP", "lin", "elin", "lin_lmt", command=self.change_opt)
+        self.option.place(x=510, y=115, width=80)
         self.yearto = tk.StringVar(mw)
         self.yearto.set('2017')  # initial value
         self.method.set('SLSQP')
@@ -80,6 +83,9 @@ class MyFirstGUI:
         Label(text="do",).place(x=550, y=80)
         self.status =tk.StringVar(mw,'Wprowadz dane do optymalizacji !')
         Entry(textvariable=self.status ,state=tk.DISABLED).place(x=225, y=600, width=300)
+        self.max_entry = Entry(mw, textvariable=self.max_number, state=tk.DISABLED)
+        self.max_entry.place(x=510, y=160, width=50)
+        Label(text="Limit pozycji:", font='Times').place(x=410, y=160)
         Label(text="Status:",font='Times').place(x=160, y=595)
         '''
         img = ImageTk.PhotoImage(Image.open('pobrane.jpg'))
@@ -89,6 +95,16 @@ class MyFirstGUI:
         #self.panel.pack(side="bottom", fill="both", expand="yes")
         self.panel.place(x=500, y=250,width=300,height=400)
          '''
+
+    def change_opt(self, event):
+        if (self.method.get() == 'lin_lmt'):
+            self.max_entry.configure(state="normal")
+
+
+        else:
+            self.max_entry.configure(state=tk.DISABLED)
+
+            
 
 
 
@@ -122,13 +138,15 @@ class MyFirstGUI:
         error=0
         maxs=self.mystring.get()
         mins=self.mystring2.get()
+        Ks = self.max_number.get()
         try:
+            K = int(Ks)
             max = float(maxs) / 100
             min = float(mins) / 100
             if max <0.5 :
                 self.status.set('Za mała wartość maksymalnego udziału')
                 error=1
-            if min >0.1:
+            if min > 0.3:
                 self.status.set('Za duża wartość minimalnego udziału')
                 error=1
 
@@ -178,7 +196,7 @@ class MyFirstGUI:
             opt.set_returns(self.returns)
             if (self.var.get()=='srednia'):
                 fn.set_average(self.returns)
-            self.sol = opt.optimize(ratio='omega', method=self.method.get(), minW=min, maxW=max)
+            self.sol = opt.optimize(ratio='omega', method=self.method.get(), minW=min, maxW=max, K=K)
             sol2 = copy.deepcopy(self.sol)
             tick = sorted(self.tick)
             for j in range(len(tick)):

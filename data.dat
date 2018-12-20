@@ -202,4 +202,4 @@ param p :=
 94 0.010
 95 0.010
 96 0.010;
-param T := 96;param rf := 0.009186236552203462;param R := 9;param maxW := 1.0;param minW := 0.02;param K := 2;
+param T := 96;param rf := 0.009186236552203462;param R := 9;param maxW := 1.0;param minW := 0.0;

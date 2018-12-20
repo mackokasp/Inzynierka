@@ -58,7 +58,7 @@ def calmar_opt (weights):
     return -1 * sharpe
 
 
-def optimize(ratio='omega',method='SLSQP',minW=0.01,maxW=0.8,weights =None):
+def optimize(ratio='omega', method='SLSQP', minW=0.01, maxW=0.8, weights=None, K=3):
     global returns
     os.environ['PATH'] = 'C:\\Users\\PC\INŻ\\ampl4'+ '|' + os.environ['PATH']
     if weights is None:
@@ -82,13 +82,13 @@ def optimize(ratio='omega',method='SLSQP',minW=0.01,maxW=0.8,weights =None):
             sol = fmin(omega_opt, x0=weights)
             return sol
         elif method =='lin':
-            sol = run_ampl_model(returns,minW=minW,maxW=maxW)
+            sol = run_ampl_model(returns, minW=minW, maxW=maxW, ex=0)
             return sol
         elif method =='elin':
             sol = run_ampl_model(returns,minW=minW,maxW=maxW,ex=1)
             return sol
         elif method == 'lin_lmt':
-            sol = run_ampl_model(returns, minW=minW, maxW=maxW, ex=2)
+            sol = run_ampl_model(returns, minW=minW, maxW=maxW, ex=2, K=K)
             return sol
 
 
@@ -188,7 +188,7 @@ def write_data_to_temp_file_ex( tmp_file, returns ,maxW =0.6,minW=0.01):
     print_scalar_param(tmp_file, minW, 'minW')
 
 
-def write_data_to_temp_file_lmt(tmp_file, returns, maxW=0.6, minW=0.01, K=2):
+def write_data_to_temp_file_lmt(tmp_file, returns, maxW=0.6, minW=0.01, K=3):
     print_2d_param(tmp_file, returns, 'r')
     means = []
     weights = []
@@ -221,14 +221,14 @@ def generate_temp_data_file_ex( data,minW=0.01,maxW=0.6):
     return tmp_file
 
 
-def generate_temp_data_file_lmt(data, minW=0.01, maxW=0.6):
+def generate_temp_data_file_lmt(data, minW=0.01, maxW=0.6, K=3):
     tmp_file = open('data.dat', 'w')
-    write_data_to_temp_file_lmt(tmp_file, data, maxW, minW)
+    write_data_to_temp_file_lmt(tmp_file, data, maxW, minW, K=K)
     tmp_file.seek(0)
     return tmp_file
 
 
-def run_ampl_model(data,minW=0.01,maxW=0.6,ex=0):
+def run_ampl_model(data, minW=0.01, maxW=0.6, ex=0, K=3):
     dir = os.path.dirname(__file__)
     dir='C:\\Biblioteki\\AMPL\\ampl.mswin64'
     #dir=dir.replace('/','\\')
@@ -243,7 +243,7 @@ def run_ampl_model(data,minW=0.01,maxW=0.6,ex=0):
         ampl.setOption('solver', dir + '\minos.exe')
     elif ex == 2:
         ampl.read('omg_lmt.txt')
-        data_file = generate_temp_data_file_lmt(data, minW=minW, maxW=maxW)
+        data_file = generate_temp_data_file_lmt(data, minW=minW, maxW=maxW, K=K)
         ampl.setOption('solver', dir + '\cplex.exe')
 
     else:
