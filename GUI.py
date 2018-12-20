@@ -103,8 +103,9 @@ class MyFirstGUI:
 
         else:
             self.max_entry.configure(state=tk.DISABLED)
+            a = 0
 
-            
+
 
 
 
