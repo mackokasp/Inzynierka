@@ -33,7 +33,7 @@ def draw_portfolios_omega(ddf,ticker,optimal=None):
         omega = ff.portfolio_omega2(df,weights.T)
 
         omega_ratio.append(omega)
-        port_returns.append(returns)
+        port_returns.append(returns * 100)
         port_volatility.append(volatility)
         stock_weights.append(weights)
 
@@ -56,11 +56,11 @@ def draw_portfolios_omega(ddf,ticker,optimal=None):
         omega2 =  ff.portfolio_omega2(ddf,optimal)
         ret = np.dot(optimal, returns_annual)
         volatility = ff.portfolio_vol(ddf, optimal)
-        plt.scatter(x=volatility, y=ret, c='blue', marker='x')
+        plt.scatter(x=volatility, y=ret * 100, c='blue', marker='x')
     plt.xlabel('Odchylenie standardowe')
     plt.ylabel('Oczekiwana stopa zwrotu')
     plt.title(build_description(ticker,optimal))
-    plt.annotate(str(omega2),xy=(volatility,ret))
+    plt.annotate(str(omega2), xy=(volatility, ret * 100))
     ax=plt.subplot()
     str2 ='Target:'+"{0:.3f}%".format(ff.gtarget*100)
     ax.text(v[0],v[3]*0.8, str2, style='italic',fontsize=16
@@ -491,8 +491,8 @@ def eval_results3(tickers,tick2,yearfrom,yearto):
     plt.show()
 
 def eval_results4(tickers,yearfrom,yearto):
-
-    colors=['darkgreen','blue','firebrick','darkgrey','cyan','magenta','yellow','black','lightblue','lightred','lime','brown','pink']
+    colors = ['darkgreen', 'blue', 'firebrick', 'darkgrey', 'cyan', 'magenta', 'yellow', 'black', 'lightblue', 'lime',
+              'brown', 'pink', 'orange', 'green']
 
     startdate = str(yearfrom)   +'-1-1'
     enddate = str(yearto)   + '-12-31'

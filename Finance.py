@@ -1,10 +1,10 @@
-import quandl
-import numpy as np
 import math
-import pandas as pd
 import os
 
-import time
+import numpy as np
+import pandas as pd
+import quandl
+
 quandl.ApiConfig.api_key = 'xux8UTaML7UgmBhuGy4v'
 
 benchmark = []
@@ -117,6 +117,7 @@ def year_returns (tickers,yearfrom ,yearto ):
 
 
     df = pd.DataFrame(frets,columns=tickers)
+    print(frets)
     return df
 
 

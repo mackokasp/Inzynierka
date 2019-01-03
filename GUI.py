@@ -10,9 +10,7 @@ import Optimizer as opt
 #from PIL import ImageTk, Image
 
 class MyFirstGUI:
-
-
-    ticks = sorted(['AAN', 'CNP', 'GE', 'F', 'WMT', 'T', 'VZ', 'RHT','PG' ])
+    ticks = sorted(['AAN', 'CNP', 'WMT', 'VZ', 'RHT', 'PG', 'GOOGL', 'BA', 'AMZN', 'AAPL'])
 
 
 
@@ -166,7 +164,7 @@ class MyFirstGUI:
             if target!='srednia':
                 try:
                     float(target)
-                    target = float(self.var.get()) / 100
+                    target = float(self.var.get())
 
                 except ValueError:
                     self.var.set('Błąd!!')
@@ -178,11 +176,12 @@ class MyFirstGUI:
 
                 fn.set_target(target/100)
 
+
             for i in range(len(self.tickers)):
                 if self.tickers[i].get() != '':
                     self.tick.append(self.tickers[i].get().upper())
             try:
-                if self.freq =='roczny':
+                if self.freq.get() == 'roczny':
                     self.returns = fn.year_returns(self.tick, int(self.yearfrom.get()), int(self.yearto.get()))
                 else:
                     self.returns = fn.month_returns(self.tick, int(self.yearfrom.get()), int(self.yearto.get()))
