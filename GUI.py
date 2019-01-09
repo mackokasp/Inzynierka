@@ -2,6 +2,8 @@ import copy
 import tkinter as tk
 from tkinter import Tk, Label, Button, Entry, OptionMenu
 
+import numpy as np
+
 import Finance as fn
 import Graph as gp
 import Optimizer as opt
@@ -10,7 +12,7 @@ import Optimizer as opt
 #from PIL import ImageTk, Image
 
 class MyFirstGUI:
-    ticks = sorted(['AAN', 'CNP', 'WMT', 'VZ', 'RHT', 'PG', 'GOOGL', 'BA', 'AMZN', 'AAPL'])
+    ticks = sorted(['S', 'WMT', 'VZ', 'RHT', 'DIS', 'JPM', 'BA', 'AMZN', 'PEP', 'ORCL', 'DAL'])
 
 
 
@@ -38,7 +40,7 @@ class MyFirstGUI:
         self.labelmin = Label(text="Min Udział ").place(x=25, y=45)
         self.inputmin = Entry( textvariable = self.mystring2).place(x=90, y=45, width=20)
         self.var = tk.StringVar(mw)
-        self.var.set('srednia')  # initial value
+        self.var.set('25')  # initial value
         self.option=Entry(text="1", textvariable=self.var).place(x=550, y=30, width=60)
         self.option = OptionMenu(mw, self.freq, "roczny", "miesieczny").place(x=440,y=28,width=100)
         Label(text="Cel:",font='Times').place(x=400, y=30)
@@ -70,11 +72,12 @@ class MyFirstGUI:
         self.method = tk.StringVar(mw)
         self.yearfrom.set('2010')  # initial value
         self.option = OptionMenu(mw, self.yearfrom, "1980", "1990", "1995", "2000", "2005","2008", "2010","2012","2013","2014","2015").place(x=470, y=75, width=80)
-        self.option = OptionMenu(mw, self.method, "SLSQP", "lin", "elin", "lin_lmt", command=self.change_opt)
+        self.option = OptionMenu(mw, self.method, "SLSQP", "lin", "elin", "lin_lmt", "lin_safe",
+                                 command=self.change_opt)
         self.option.place(x=510, y=115, width=80)
         self.yearto = tk.StringVar(mw)
         self.yearto.set('2017')  # initial value
-        self.method.set('SLSQP')
+        self.method.set('lin')
         self.option = OptionMenu(mw, self.yearto, "2000", "2005", "2010","2015","2016" ,"2017").place(x=570,y=75,width=80)
         Label(text="Dane od roku:" ).place(x=390, y=80)
         Label(text="Metoda Optymalizacji:").place(x=390, y=125)
@@ -95,7 +98,7 @@ class MyFirstGUI:
          '''
 
     def change_opt(self, event):
-        if (self.method.get() == 'lin_lmt'):
+        if (self.method.get() == 'lin_lmt' or self.method.get() == 'lin_safe'):
             self.max_entry.configure(state="normal")
 
 
@@ -116,7 +119,7 @@ class MyFirstGUI:
         gp.draw_portfolios_omega(self.returns ,self.tick,self.sol)
 
     def table(self):
-        gp.draw_table(self.returns,self.sol)
+        gp.compare_table(self.returns, self.sol)
 
 
 
@@ -142,7 +145,7 @@ class MyFirstGUI:
             K = int(Ks)
             max = float(maxs) / 100
             min = float(mins) / 100
-            if max <0.5 :
+            if max < 0.3:
                 self.status.set('Za mała wartość maksymalnego udziału')
                 error=1
             if min > 0.3:
@@ -196,19 +199,34 @@ class MyFirstGUI:
             opt.set_returns(self.returns)
             if (self.var.get()=='srednia'):
                 fn.set_average(self.returns)
-            self.sol = opt.optimize(ratio='omega', method=self.method.get(), minW=min, maxW=max, K=K)
-            sol2 = copy.deepcopy(self.sol)
-            tick = sorted(self.tick)
-            for j in range(len(tick)):
-                sol2[j] = sol2[j] * 100
-                self.tickers[j].set(tick[j])
-                self.weights[j].set('{0:.4f}'.format(sol2[j]))
-            self.graph_btn.configure(state="normal")
-            self.table_btn.configure(state="normal")
-            if sol2 is not None :
-                self.status.set('Zoptymalizowano !')
-            else :
-                self.status.set('Coś poszło nie tak')
+            try:
+                self.sol = opt.optimize(ratio='omega', method=self.method.get(), minW=min, maxW=max, K=K)
+            except:
+                self.status.set('Błąd optymlizacji')
+                error = 1
+
+            if self.sol is None or len(self.sol) < 1:
+                self.status.set('Błąd optymlizacji')
+                error = 1
+
+            if error == 0:
+                sol2 = copy.deepcopy(self.sol)
+                tick = sorted(self.tick)
+                for j in range(len(tick)):
+                    sol2[j] = sol2[j] * 100
+                    self.tickers[j].set(tick[j])
+                    self.weights[j].set('{0:.4f}'.format(sol2[j]))
+                self.graph_btn.configure(state="normal")
+                self.table_btn.configure(state="normal")
+                for k in range(len(tick), len(self.tickers)):
+                    self.weights[k].set('{0:.4f}'.format(0.00))
+
+                if sol2[1] is not None and not np.isnan(sol2[1]):
+                    self.status.set('Zoptymalizowano !')
+                else:
+                    self.status.set('nie udalo sie znaleźc rozwiazania')
+
+
 
 
 

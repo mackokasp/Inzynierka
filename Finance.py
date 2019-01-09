@@ -48,7 +48,10 @@ def get_prices(ticker,dfrom ='2015-1-1',dto='2018-1-10'):
         returns_daily = table
         data = returns_daily
 
-        data = data.dropna(axis=1)
+        data = data.dropna(axis=0)
+        data.fillna(method='ffill', inplace=True)
+
+
 
 
         data.sort_index(inplace=True)
@@ -117,7 +120,7 @@ def year_returns (tickers,yearfrom ,yearto ):
 
 
     df = pd.DataFrame(frets,columns=tickers)
-    print(frets)
+
     return df
 
 
@@ -320,7 +323,7 @@ def portfolio_omega(returns,weights,rf=0.03,target =0.1):
         #print (rr)
         rets=rets+rr
 
-    omega = omega2(rets,target=target)
+    omega = omega_ratio(rets, target=target)
 
     return  omega
 

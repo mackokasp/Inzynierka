@@ -33,7 +33,7 @@ def omega_opt( weights):
     omega=0
     weights=normalize(weights)
 
-    omega = ff.portfolio_omega2(returns,weights)
+    omega = ff.portfolio_omega(returns, weights)
     return -1 * omega
 
 
@@ -73,7 +73,10 @@ def optimize(ratio='omega', method='SLSQP', minW=0.01, maxW=0.8, weights=None, K
         bnds.append((minW, maxW))
     if ratio=='omega':
         if method =='SLSQP':
-            sol = minimize(omega_opt, method='SLSQP', x0=weights,bounds=bnds, constraints=con)
+            # sol = minimize(omega_opt, method='SLSQP', x0=weights,bounds=bnds, constraints=con,tol=0.0001)
+            sol = minimize(omega_opt, method='Nelder-Mead', x0=weights, tol=0.000001)
+
+
         elif method=='Nelder-Mead':
             sol = minimize(omega_opt, method='Nelder-Mead', x0=weights)
         elif method=='Newton-CG':
@@ -90,9 +93,9 @@ def optimize(ratio='omega', method='SLSQP', minW=0.01, maxW=0.8, weights=None, K
         elif method == 'lin_lmt':
             sol = run_ampl_model(returns, minW=minW, maxW=maxW, ex=2, K=K)
             return sol
-
-
-
+        elif method == 'lin_safe':
+            sol = run_ampl_model(returns, minW=minW, maxW=maxW, ex=3, K=K)
+            return sol
         else:
             sol = minimize(omega_opt, method=method, x0=weights)
 
@@ -110,6 +113,7 @@ def optimize(ratio='omega', method='SLSQP', minW=0.01, maxW=0.8, weights=None, K
 
 
         return sol
+
     return  sol.x
 
 
@@ -242,7 +246,16 @@ def run_ampl_model(data, minW=0.01, maxW=0.6, ex=0, K=3):
         data_file = generate_temp_data_file(data, minW=minW, maxW=maxW)
         ampl.setOption('solver', dir + '\minos.exe')
     elif ex == 2:
+
         ampl.read('omg_lmt.txt')
+
+        data_file = generate_temp_data_file_lmt(data, minW=minW, maxW=maxW, K=K)
+        ampl.setOption('solver', dir + '\cplex.exe')
+
+    elif ex == 3:
+        # ampl.read('omg_lmt.txt')
+        ampl.read('omg4.txt')
+
         data_file = generate_temp_data_file_lmt(data, minW=minW, maxW=maxW, K=K)
         ampl.setOption('solver', dir + '\cplex.exe')
 

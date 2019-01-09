@@ -1,10 +1,9 @@
-import numpy as np
 from sklearn.svm import SVR
 import matplotlib.pyplot as plt
-from sklearn.model_selection import train_test_split as tts
+from sklearn.svm import SVR
+
 
 def prediction (dates,prices):
-
 
     X=dates.as_matrix().reshape(len(dates), 1)
     y = prices.as_matrix().reshape(len(prices), 1).ravel()

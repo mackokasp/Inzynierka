@@ -1,0 +1,61 @@
+param T  ;
+param rf;
+param R  ;
+param  u{1..R} ;
+param r{1..T,1..R} ;
+param p{1..T };
+var x{1..R};
+var v0 ;
+var vv0 {1..R} ;
+var z ;
+var v ;
+var z1 ;
+var d{1..T};
+var y{1..T} ;
+var zz {1..R} binary ;
+var o {1..T} ;
+var oo {1..T} ;
+param K ;
+param minW;
+param maxW;
+
+
+
+maximize fun: v-rf*v0 ;
+
+subject to
+ c1: sum{i in 1..R}x[i]=v0;
+ c2: sum{i in 1..R}x[i]*u[i]=v ;
+
+ c3{t in 1..T}: y[t]=sum{rr in 1..R}r[t,rr]*x[rr] ;
+
+ c4: sum{t in 1..T}d[t]*p[t]=1;
+
+
+ c6{t in 1..T}: d[t] >= 0 ;
+
+ c7{t in 1..T}: d[t]>=rf*v0-y[t];
+
+ c9: v0 <= 10000 ;
+
+ c8{i in 1..R}: x[i]>=minW*vv0[i] ;
+ c10{i in 1..R}: x[i]<=maxW*v0 ;
+
+ c11{i in 1..R}:x[i]<=10000*zz[i] ;
+ c12: sum{i in 1..R} zz[i] <= K ;
+ c15{i in 1..R}: vv0[i] <= 10000*zz[i] ;
+ c16{i in 1..R}: vv0[i] >= 0 ;
+ c17{i in 1..R}: vv0[i] <= v0 ;
+ c18{i in 1..R}: v0 - vv0[i] + 10000*zz[i] <=10000 ;
+ c19{t in 1..T}:d[t]<=rf - v0-y[t]+10000*o[t] ;
+ c20{t in 1..T}:d[t]<=10000*v0-10000*o[t];
+ c21{t in 1..T}:o[t]>=0 ;
+ c22{t in 1..T}:o[t]<=10000*oo[t] ;
+ c23{t in 1..T}:o[t]<=v0 ;
+ c24{t in 1..T}:v0-o[t]-10000*oo[t]<=10000 ;
+
+
+
+
+
+
