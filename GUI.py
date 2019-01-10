@@ -63,10 +63,13 @@ class MyFirstGUI:
         Button(mw, text="Optymalizuj", command=self.optimize).place(x=120, y=550, width=100)
         self.graph_btn=Button(mw, text="Pokaż wykres",state=tk.DISABLED, command=self.draw)
         self.table_btn = Button(mw, text="Rysuj tabele", state=tk.DISABLED, command=self.table)
-        self.eval_button = Button(mw,text='Porównaj pozycje',command=self.eval_portfolio)
+        self.eval_button = Button(mw, text='Zmiany akcji', command=self.eval_portfolio)
+        self.evalext_button = Button(mw, text='Zmiany portfolio', command=self.evalext_portfolio, state=tk.DISABLED)
+
         self.graph_btn.place(x=220,y=550,width=100)
         self.table_btn.place(x=320, y=550, width=100)
-        self.eval_button.place(x=420, y=550, width=150)
+        self.eval_button.place(x=420, y=550, width=100)
+        self.evalext_button.place(x=520, y=550, width=100)
 
         self.yearfrom = tk.StringVar(mw)
         self.method = tk.StringVar(mw)
@@ -76,7 +79,7 @@ class MyFirstGUI:
                                  command=self.change_opt)
         self.option.place(x=510, y=115, width=80)
         self.yearto = tk.StringVar(mw)
-        self.yearto.set('2017')  # initial value
+        self.yearto.set('2016')  # initial value
         self.method.set('lin')
         self.option = OptionMenu(mw, self.yearto, "2000", "2005", "2010","2015","2016" ,"2017").place(x=570,y=75,width=80)
         Label(text="Dane od roku:" ).place(x=390, y=80)
@@ -119,7 +122,7 @@ class MyFirstGUI:
         gp.draw_portfolios_omega(self.returns ,self.tick,self.sol)
 
     def table(self):
-        gp.compare_table(self.returns, self.sol)
+        gp.draw_table(self.returns, self.sol)
 
 
 
@@ -130,6 +133,13 @@ class MyFirstGUI:
             if self.tickers[i].get() != '':
                 self.tick.append(self.tickers[i].get().upper())
         gp.eval_results4(self.tick,int(self.yearfrom.get()),int(self.yearto.get()))
+
+    def evalext_portfolio(self):
+        self.tick = []
+        for i in range(len(self.tickers)):
+            if self.tickers[i].get() != '':
+                self.tick.append(self.tickers[i].get().upper())
+        gp.eval_results5(self.tick, int(self.yearfrom.get()), int(self.yearto.get()), 1, self.sol)
 
 
 
@@ -218,6 +228,7 @@ class MyFirstGUI:
                     self.weights[j].set('{0:.4f}'.format(sol2[j]))
                 self.graph_btn.configure(state="normal")
                 self.table_btn.configure(state="normal")
+                self.evalext_button.configure(state="normal")
                 for k in range(len(tick), len(self.tickers)):
                     self.weights[k].set('{0:.4f}'.format(0.00))
 

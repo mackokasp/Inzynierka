@@ -1,14 +1,12 @@
-import Finance as ff
-import Optimizer as opt
-import Graph as gg
-import django
-import GUI as gi
-
-import numpy as numpy
-import numpy.random as nrand
 import pandas as pd
-import os
-import Prediction as pred
+
+import Finance as ff
+import GUI as gi
+import Graph as gg
+import Optimizer as opt
+
+# opis modulow, testowanie, horyzont, porownianie z innym zrodlem
+
 
 gi.start()
 def randomize (metadata,yearfrom, yearto, num):

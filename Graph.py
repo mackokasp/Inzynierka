@@ -568,6 +568,77 @@ def eval_results4(tickers,yearfrom,yearto):
     plt.show()
 
 
+def eval_results5(tickers, yearfrom, yearto, yearsafter, sol=[]):
+    if sol is None or len(sol) == 0:
+        for i in range(len(tickers)):
+            sol.append(1.0 / len(tickers))
+
+    colors = ['darkgreen', 'darkblue', 'aqua', 'darkgrey', 'tomato', 'magenta', 'deeppink', 'black', 'lightblue',
+              'lime',
+              'brown', 'violet', 'orange', 'lightgreen']
+
+    startdate = str(yearfrom) + '-1-1'
+    enddate = str(yearto) + '-12-31'
+    startdate2 = str(yearto + 1) + '-1-1'
+    enddate2 = str(yearto + yearsafter) + '-12-31'
+
+    df = ff.get_prices(tickers, startdate, enddate)
+    df2 = ff.get_prices(tickers, startdate2, enddate2)
+
+    X = df[1].as_matrix().reshape(len(df[1]), 1)
+    X2 = df2[1].as_matrix().reshape(len(df2[1]), 1)
+
+    y = []
+    prices = []
+    prices2 = []
+    start_price = []
+    solprice = []
+    solprice2 = []
+    # .ravel()
+
+    for j in range(df[0].shape[1]):
+        start_price.append(df[0]['open'].iloc[0, j])
+        list = []
+        for r in range(df[0].shape[0]):
+            a = 100 * df[0]['open'].iloc[r, j] / start_price[j]
+
+            list.append(a)
+        prices.append(list)
+
+    for k in range(df2[0].shape[1]):
+        list2 = []
+        for p in range(df2[0].shape[0]):
+            b = 100 * df2[0]['open'].iloc[p, k] / start_price[k]
+            list2.append(b)
+        prices2.append(list2)
+
+    for t in range(len(prices[1])):
+        solp = 0
+        for q in range(len(prices)):
+            solp = solp + prices[q][t] * sol[q]
+        solprice.append(solp)
+
+    for t in range(len(prices2[1])):
+        solp2 = 0
+        for q in range(len(prices)):
+            solp2 = solp2 + prices2[q][t] * sol[q]
+        solprice2.append(solp2)
+
+    plt.figure(figsize=(15, 7))
+    plt.plot(X, solprice, color='gold', label='PORTFOLIO', marker='>')
+    plt.plot(X2, solprice2, color='gold', marker='>')
+    for i in range(len(prices)):
+        plt.plot(X, prices[i], color=colors[i], label=tickers[i])
+    for i in range(len(prices2)):
+        plt.plot(X2, prices2[i], color=colors[i])
+
+    plt.axvline(X2[1], color='red')
+    plt.xlabel('Data')
+    plt.ylabel('Wartość w procentach')
+    plt.title('Zmiana Wartości portfolio')
+    plt.legend()
+    plt.grid(True)
+    plt.show()
 
 
 
