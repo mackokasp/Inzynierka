@@ -1,12 +1,10 @@
 import copy
 import tkinter as tk
-from tkinter import Tk, Label, Button, Entry, OptionMenu
+from tkinter import Tk, Label, Button, Entry, OptionMenu, ttk
 
 import numpy as np
 
-import Finance as fn
-import Graph as gp
-import Optimizer as opt
+import Controller as con
 
 
 #from PIL import ImageTk, Image
@@ -20,6 +18,9 @@ class MyFirstGUI:
 
 
     def __init__(self, mw):
+        self.style = ttk.Style()
+        print(self.style.theme_names())
+        self.style.theme_use('vista')
         self.num =15
         self.mw = mw
         mw.title("Optymalizacja omega")
@@ -27,6 +28,7 @@ class MyFirstGUI:
         mw.resizable(0, 0)
         self.mystring = tk.StringVar(mw,'100')
         self.mystring2 = tk.StringVar(mw,'0')
+        self.evalext_str = tk.StringVar(mw, '1')
         self.weights=[]
         self.tickers=[]
         self.max_number = tk.StringVar(mw, 3)
@@ -65,6 +67,9 @@ class MyFirstGUI:
         self.table_btn = Button(mw, text="Rysuj tabele", state=tk.DISABLED, command=self.table)
         self.eval_button = Button(mw, text='Zmiany akcji', command=self.eval_portfolio)
         self.evalext_button = Button(mw, text='Zmiany portfolio', command=self.evalext_portfolio, state=tk.DISABLED)
+        self.evalext_entry = Entry(textvariable=self.evalext_str).place(x=560, y=525, width=20)
+        Label(text="Pokaz", font='Times').place(x=510, y=525)
+        Label(text="lat po okresie", font='Times').place(x=585, y=525)
 
         self.graph_btn.place(x=220,y=550,width=100)
         self.table_btn.place(x=320, y=550, width=100)
@@ -74,14 +79,16 @@ class MyFirstGUI:
         self.yearfrom = tk.StringVar(mw)
         self.method = tk.StringVar(mw)
         self.yearfrom.set('2010')  # initial value
-        self.option = OptionMenu(mw, self.yearfrom, "1980", "1990", "1995", "2000", "2005","2008", "2010","2012","2013","2014","2015").place(x=470, y=75, width=80)
+        self.option = OptionMenu(mw, self.yearfrom, "1980", "1990", "1995", "2000", "2003", "2005", "2008", "2010",
+                                 "2012", "2013", "2014", "2015").place(x=470, y=75, width=80)
         self.option = OptionMenu(mw, self.method, "SLSQP", "lin", "elin", "lin_lmt", "lin_safe",
                                  command=self.change_opt)
         self.option.place(x=510, y=115, width=80)
         self.yearto = tk.StringVar(mw)
         self.yearto.set('2016')  # initial value
         self.method.set('lin')
-        self.option = OptionMenu(mw, self.yearto, "2000", "2005", "2010","2015","2016" ,"2017").place(x=570,y=75,width=80)
+        self.option = OptionMenu(mw, self.yearto, "2000", "2003", "2005", "2008", "2010", "2012", "2015", "2016",
+                                 "2017").place(x=570, y=75, width=80)
         Label(text="Dane od roku:" ).place(x=390, y=80)
         Label(text="Metoda Optymalizacji:").place(x=390, y=125)
         Label(text="do",).place(x=550, y=80)
@@ -119,10 +126,10 @@ class MyFirstGUI:
 
     def draw(self):
 
-        gp.draw_portfolios_omega(self.returns ,self.tick,self.sol)
+        con.draw_portfolios_omega(self.returns, self.tick, self.sol)
 
     def table(self):
-        gp.draw_table(self.returns, self.sol)
+        con.draw_table(self.returns, self.sol)
 
 
 
@@ -132,14 +139,34 @@ class MyFirstGUI:
         for i in range(len(self.tickers)):
             if self.tickers[i].get() != '':
                 self.tick.append(self.tickers[i].get().upper())
-        gp.eval_results4(self.tick,int(self.yearfrom.get()),int(self.yearto.get()))
+        con.eval_results(self.tick, int(self.yearfrom.get()), int(self.yearto.get()))
 
     def evalext_portfolio(self):
         self.tick = []
-        for i in range(len(self.tickers)):
-            if self.tickers[i].get() != '':
-                self.tick.append(self.tickers[i].get().upper())
-        gp.eval_results5(self.tick, int(self.yearfrom.get()), int(self.yearto.get()), 1, self.sol)
+        yearsaft = self.evalext_str.get()
+
+        years_int = 0
+        error = 0
+        try:
+            years_int = int(yearsaft)
+            if int(self.yearto.get()) + years_int > 2017:
+                self.status.set('Nieprawidłowy okres (dane tylko do konca 2017)')
+                error = 1
+
+        except:
+            self.status.set('Podano nieprawidłową liczbe lat okresu po')
+            error = 1
+
+        if error == 0:
+            for i in range(len(self.tickers)):
+                if self.tickers[i].get() != '':
+                    self.tick.append(self.tickers[i].get().upper())
+            try:
+                con.eval_portfolio(self.tick, int(self.yearfrom.get()), int(self.yearto.get()), years_int, self.sol)
+            except:
+                self.status.set('Podano nieprawidłową ID firm lub okres')
+
+
 
 
 
@@ -185,9 +212,7 @@ class MyFirstGUI:
 
                     return
 
-
-
-                fn.set_target(target/100)
+                con.set_target(target / 100)
 
 
             for i in range(len(self.tickers)):
@@ -195,9 +220,9 @@ class MyFirstGUI:
                     self.tick.append(self.tickers[i].get().upper())
             try:
                 if self.freq.get() == 'roczny':
-                    self.returns = fn.year_returns(self.tick, int(self.yearfrom.get()), int(self.yearto.get()))
+                    self.returns = con.year_returns(self.tick, int(self.yearfrom.get()), int(self.yearto.get()))
                 else:
-                    self.returns = fn.month_returns(self.tick, int(self.yearfrom.get()), int(self.yearto.get()))
+                    self.returns = con.month_returns(self.tick, int(self.yearfrom.get()), int(self.yearto.get()))
 
             except:
                 self.status.set('Podano niepoprawne ID firm')
@@ -206,11 +231,11 @@ class MyFirstGUI:
 
 
         if error==0:
-            opt.set_returns(self.returns)
+            con.set_returns(self.returns)
             if (self.var.get()=='srednia'):
-                fn.set_average(self.returns)
+                con.set_average(self.returns)
             try:
-                self.sol = opt.optimize(ratio='omega', method=self.method.get(), minW=min, maxW=max, K=K)
+                self.sol = con.optimize(ratio='omega', method=self.method.get(), minW=min, maxW=max, K=K)
             except:
                 self.status.set('Błąd optymlizacji')
                 error = 1
@@ -261,6 +286,7 @@ class MyFirstGUI:
 
 def start():
     root = Tk()
+
     root.title('Optymalizacja Omega')
     root.configure(background='white')
     my_gui = MyFirstGUI(root)

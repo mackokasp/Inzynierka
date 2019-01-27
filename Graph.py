@@ -7,8 +7,6 @@ import plotly.plotly as py
 
 import Finance as ff
 
-#from PIL import Image, ImageTk
-
 plotly.tools.set_credentials_file(username='kasprzyk_maciej', api_key='vUAhsEfbBaTYBpZWsBFs')
 
 def draw_portfolios_omega(ddf,ticker,optimal=None):
@@ -60,7 +58,7 @@ def draw_portfolios_omega(ddf,ticker,optimal=None):
     plt.xlabel('Odchylenie standardowe')
     plt.ylabel('Oczekiwana stopa zwrotu')
     plt.title(build_description(ticker,optimal))
-    plt.annotate(str(omega2)[0:7], xy=(volatility, ret * 100))
+    plt.annotate(str(omega2)[0:7], xy=(volatility, ret * 100), xytext=(volatility, ret * 100))
     ax=plt.subplot()
     str2 ='Target:'+"{0:.3f}%".format(ff.gtarget*100)
     ax.text(v[0],v[3]*0.8, str2, style='italic',fontsize=16
@@ -116,26 +114,27 @@ def draw_table(df,optimal):
     #plt.show()
 
 
-def compare_table(df, optimal, optimal2, optimal3, optimal4, optimal5):
+def compare_table(df, optimal2, optimal3, optimal4, optimal5):
+
     m = []
+
     # optimal2=[0.58902,0.37472,0.03626,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]
     # optimal3=[0.66303,0.30854,0.02843,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]
     # optimal4 = [0.9343, 0.0657, 0.00, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-
     # optimal5=[1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]
 
     for i in range(df.shape[0]):
         m.append(np.mean(df.iloc[i, :]))
 
     res = prepare_portfolio_data(df, m)
-    opt_res = prepare_optimal(df, optimal, m)
+
     opt_res2 = prepare_optimal(df, optimal2, m)
     opt_res3 = prepare_optimal(df, optimal3, m)
     opt_res4 = prepare_optimal(df, optimal4, m)
     opt_res5 = prepare_optimal(df, optimal5, m)
 
     trace = go.Table(
-        header=dict(values=['   ', 'Average', 'Optimal(1.2)', 'Optimal(avg)', 'Optimal(1.8)', 'elin'],
+        header=dict(values=['   ', 'Average', 'Optimal(0.5)', 'Optimal(1.0)', 'Optimal(1.5)', 'elin'],
                     line=dict(color='#7D7F80'),
                     fill=dict(color='#a1c3d1'),
                     align=['left'] * 4),
@@ -150,6 +149,42 @@ def compare_table(df, optimal, optimal2, optimal3, optimal4, optimal5):
     data = [trace]
     fig = dict(data=data, layout=layout)
     py.image.save_as(fig, filename='compare.png')
+
+
+def compare_table(df, optimal2, optimal3, optimal4, optimal5):
+    m = []
+
+    # optimal2=[0.58902,0.37472,0.03626,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]
+    # optimal3=[0.66303,0.30854,0.02843,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]
+    # optimal4 = [0.9343, 0.0657, 0.00, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    # optimal5=[1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]
+
+    for i in range(df.shape[0]):
+        m.append(np.mean(df.iloc[i, :]))
+
+    res = prepare_portfolio_data(df, m)
+
+    opt_res2 = prepare_optimal(df, optimal2, m)
+    opt_res3 = prepare_optimal(df, optimal3, m)
+    opt_res4 = prepare_optimal(df, optimal4, m)
+    opt_res5 = prepare_optimal(df, optimal5, m)
+
+    trace = go.Table(
+        header=dict(values=['   ', 'Average', 'Last1', 'Last2', 'Last3', 'elin'],
+                    line=dict(color='#7D7F80'),
+                    fill=dict(color='#a1c3d1'),
+                    align=['left'] * 4),
+        cells=dict(values=[
+            ['Volatility', 'Omega', 'Sharpe', 'Sortino', 'Calamr', 'Max Drowdown', 'Treynor', 'Evar', 'IR', 'UP'],
+            res, opt_res2, opt_res3, opt_res4, opt_res5],
+            line=dict(color='#7D7F80'),
+            fill=dict(color='#EDFAFF'),
+            align=['left'] * 4))
+
+    layout = dict(width=900, height=500)
+    data = [trace]
+    fig = dict(data=data, layout=layout)
+    py.image.save_as(fig, filename='compare2.png')
 
 def prepare_best(df, optimal, m):
     max = 0

@@ -101,6 +101,14 @@ def year_returns (tickers,yearfrom ,yearto ):
         data= data.dropna()
         data = data.pivot(index='date', columns='ticker', values='adj_close')
         data=data.dropna(axis=0,how='any')
+        #
+        data = quandl.get_table('WIKI/PRICES', ticker=tickers,
+                                qopts={'columns': ['date', 'ticker', 'close']},
+                                date={'gte': datefrom, 'lte': dateto}, paginate=True)
+        data = data.dropna()
+        data = data.pivot(index='date', columns='ticker', values='close')
+        data = data.dropna(axis=0, how='any')
+        #
 
         for i in range(yearto+1-yearfrom):
 
@@ -135,7 +143,8 @@ def month_returns (tickers,yearfrom ,yearto ):
                                 date={'gte': datefrom, 'lte': dateto}, paginate=True)
         data= data.dropna()
         data = data.pivot(index='date', columns='ticker', values='adj_close')
-        data=data.dropna(axis=0,how='any')
+        ##
+
 
         for i in range(yearto+1-yearfrom):
 
@@ -143,6 +152,45 @@ def month_returns (tickers,yearfrom ,yearto ):
                 sttime=pd.to_datetime(str(yearfrom+i) + str(m).zfill(2)+'01', format='%Y%m%d', errors='coerce')
                 entime =pd.to_datetime(str(yearfrom+i)+  str(m).zfill(2)+days[m-1], format='%Y%m%d', errors='coerce')
                 data2=data.loc[sttime:entime]
+
+                rets = []
+                for j in range(data.shape[1]):
+                    startprice = data2.iloc[0, j]
+                    endprice = data2.iloc[-1, j]
+                    ret = (endprice - startprice) / startprice
+                    rets.append(ret)
+
+                frets.append(rets)
+
+    df = pd.DataFrame(frets, columns=tickers)
+    return df
+
+
+def month_returns2(tickers, yearfrom, yearto):
+    days = ['31', '28', '31', '30', '31', '30', '31', '31', '30', '31', '30', '31']
+    frets = []
+    if 1 == 1:
+        datefrom = make_date(yearfrom, 1, 1)
+        dateto = make_date(yearto + 1, 1, 1)
+        data = quandl.get_table('WIKI/PRICES', ticker=tickers,
+                                qopts={'columns': ['date', 'ticker', 'adj_close']},
+                                date={'gte': datefrom, 'lte': dateto}, paginate=True)
+        data = data.dropna()
+        data = data.pivot(index='date', columns='ticker', values='adj_close')
+        ##
+
+        for i in range(yearto + 1 - yearfrom):
+
+            for m in range(1, 13):
+                sttime = pd.to_datetime(str(yearfrom + i) + str(m).zfill(2) + '01', format='%Y%m%d', errors='coerce')
+                if m < 12:
+                    entime = pd.to_datetime(str(yearfrom + i) + str(m + 1).zfill(2) + '01', format='%Y%m%d',
+                                            errors='coerce')
+                else:
+                    entime = pd.to_datetime(str(yearfrom + i + 1) + str(1).zfill(2) + '01', format='%Y%m%d',
+                                            errors='coerce')
+
+                data2 = data.loc[sttime:entime]
 
                 rets = []
                 for j in range(data.shape[1]):
@@ -295,7 +343,7 @@ def omega2(returns, target =0.0):
         else:
             downside= downside + (target-rr)
 
-    omega2= upside/downside
+    omega2 = upside / (downside)
     return omega2
 
 
@@ -323,7 +371,7 @@ def portfolio_omega(returns,weights,rf=0.03,target =0.1):
         #print (rr)
         rets=rets+rr
 
-    omega = omega_ratio(rets, target=target)
+    omega = omega2(rets, target=target)
 
     return  omega
 
